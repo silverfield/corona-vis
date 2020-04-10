@@ -43884,29 +43884,56 @@ __webpack_require__.r(__webpack_exports__);
 
 
 d3__WEBPACK_IMPORTED_MODULE_0__["csv"]('data.csv').then(data => {
-  const totalsBarChart = new dc__WEBPACK_IMPORTED_MODULE_1__["RowChart"]('#totals-bar'); // const evolutionLineChart = new dc.LineChart('#evolution-line');
-  // prep data ----------------------------------------
+  const totalCasesByCountryChart = new dc__WEBPACK_IMPORTED_MODULE_1__["RowChart"]('#totalCasesByCountry');
+  const totalCasesInTimeChart = new dc__WEBPACK_IMPORTED_MODULE_1__["LineChart"]('#totalCasesInTime'); // prep data ----------------------------------------
 
   const dateFormatParser = d3__WEBPACK_IMPORTED_MODULE_0__["timeParse"]('%Y-%m-%d');
   data.forEach(d => {
     d.date = dateFormatParser(d.date);
-  }); // prep the cross filters ----------------------------------------
+  }); // debugger;
+  // prep the cross filters ----------------------------------------
 
-  const ndx = crossfilter__WEBPACK_IMPORTED_MODULE_2__(data);
-  const all = ndx.groupAll();
-  const countryDimension = ndx.dimension(d => d.country);
-  const dateDimension = ndx.dimension(d => d.date);
+  const mainNdx = crossfilter__WEBPACK_IMPORTED_MODULE_2__(data);
+  const all = mainNdx.groupAll();
+  const countryDimension = mainNdx.dimension(d => d.country);
+  const dateDimension = mainNdx.dimension(d => d.date);
   const countryTotals = countryDimension.group().reduceSum(d => d.cases);
-  console.log(countryTotals.all()); // charts ----------------------------------------
+  const dateTotals = dateDimension.group().reduceSum(d => d.cases); // const indexAvgByMonthGroup = moveMonths.group().reduce(
+  //     (p, v) => {
+  //         ++p.days;
+  //         p.total += (v.open + v.close) / 2;
+  //         p.avg = Math.round(p.total / p.days);
+  //         return p;
+  //     },
+  //     (p, v) => {
+  //         --p.days;
+  //         p.total -= (v.open + v.close) / 2;
+  //         p.avg = p.days ? Math.round(p.total / p.days) : 0;
+  //         return p;
+  //     },
+  //     () => ({days: 0, total: 0, avg: 0})
+  // );
 
-  totalsBarChart.width(600).height(8000).margins({
+  console.log(countryTotals.all());
+  console.log(countryDimension); // debugger;
+  // charts ----------------------------------------
+
+  totalCasesByCountryChart.turnOnControls(true).controlsUseVisibility(true).width(600).height(400).transitionDuration(500).margins({
     top: 20,
     left: 10,
     right: 10,
     bottom: 20
-  }).group(countryTotals).dimension(countryDimension).elasticX(true); // .label(d => d.key)
-  // .title(d => d.value);
-
+  }).group(countryTotals).dimension(countryDimension).elasticX(true).cap(10).label(d => d.key).title(d => d.value);
+  let minDate = Math.min(...data.map(d => d.date));
+  let maxDate = Math.max(...data.map(d => d.date));
+  totalCasesInTimeChart.turnOnControls(true).controlsUseVisibility(true).curve(d3__WEBPACK_IMPORTED_MODULE_0__["curveLinear"]).width(990).height(200).transitionDuration(500).margins({
+    top: 30,
+    right: 50,
+    bottom: 25,
+    left: 40
+  }).dimension(dateDimension).mouseZoomable(true) // .rangeChart(volumeChart)
+  .x(d3__WEBPACK_IMPORTED_MODULE_0__["scaleTime"]().domain([minDate, maxDate])) // .round(d3.timeMonth.round)
+  .xUnits(d3__WEBPACK_IMPORTED_MODULE_0__["timeMonths"]).elasticY(true).renderHorizontalGridLines(true).group(dateTotals);
   dc__WEBPACK_IMPORTED_MODULE_1__["renderAll"]();
 });
 
