@@ -23,11 +23,13 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 </head>
 
-<script src="main_bundle.js"></script>
+<script src="main_bundle.js">
+    
+</script>
 
 <body>
-    <div id='totalCasesByCountry'>
-        <span>Total cases by country</span>
+    <h3>Total cases by country</h3>
+    <div id='totalCasesByCountryChart'>
         <a class='reset'
             href='javascript:totalCasesByCountryChart.filterAll();dc.redrawAll();'
             style='visibility: hidden;'
@@ -35,8 +37,9 @@
             reset
         </a>
     </div>
-    <div id='totalCasesInTime'>
-        <span>Total number of cases in time</span>
+    
+    <h3>Total number of cases in time</h3>
+    <div id='totalCasesInTimeChart'>
         <a class='reset'
             href='javascript:totalCasesInTimeChart.filterAll();dc.redrawAll();'
             style='visibility: hidden;'
@@ -45,7 +48,47 @@
         </a>
     </div>
 
+    <h3>New cases in time</h3>
+    <div id='newCasesInTimeChart'>
+        <a class='reset'
+            href='javascript:newCasesInTimeChart.filterAll();dc.redrawAll();'
+            style='visibility: hidden;'
+        >
+            reset
+        </a>
+    </div>
 
+    <h3>Test</h3>
+    <div id='testChart'>
+        <a class='reset'
+            href='javascript:testChart.filterAll();dc.redrawAll();'
+            style='visibility: hidden;'
+        >
+            reset
+        </a>
+    </div>
+
+    <h3>Total deaths in time</h3>
+    <div id='totalDeathsInTimeChart'>
+        <a class='reset'
+            href='javascript:totalDeathsInTimeChart.filterAll();dc.redrawAll();'
+            style='visibility: hidden;'
+        >
+            reset
+        </a>
+    </div>
+
+    <h3>New deaths in time</h3>
+    <div id='newDeathsInTimeChart'>
+        <a class='reset'
+            href='javascript:newDeathsInTimeChart.filterAll();dc.redrawAll();'
+            style='visibility: hidden;'
+        >
+            reset
+        </a>
+    </div>
+
+    
 </body>
 </html>
 

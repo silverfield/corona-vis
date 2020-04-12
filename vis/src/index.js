@@ -3,11 +3,15 @@
 import * as d3 from "d3";
 import * as dc from 'dc';
 import * as crossfilter from 'crossfilter';
+import './css/styles.scss';
 
+window.dc = dc;
 
 d3.csv('data.csv').then(data => {
-    const totalCasesByCountryChart = new dc.RowChart('#totalCasesByCountry');
-    const totalCasesInTimeChart = new dc.LineChart('#totalCasesInTime');
+    window.totalCasesByCountryChart = new dc.RowChart('#totalCasesByCountryChart');
+    window.totalCasesInTimeChart = new dc.LineChart('#totalCasesInTimeChart');
+    window.newCasesInTimeChart = new dc.LineChart('#newCasesInTimeChart');
+    window.testChart = new dc.LineChart('#testChart');
 
     // prep data ----------------------------------------
 
@@ -16,7 +20,6 @@ d3.csv('data.csv').then(data => {
     data.forEach(d => {
         d.date = dateFormatParser(d.date);
     });
-    // debugger;
 
     // prep the cross filters ----------------------------------------
 
@@ -26,9 +29,10 @@ d3.csv('data.csv').then(data => {
     const countryDimension = mainNdx.dimension(d => d.country);
     const dateDimension = mainNdx.dimension(d => d.date);
 
-    const countryTotals = countryDimension.group().reduceSum(d => d.cases);
+    const totalCasesByCountry = countryDimension.group().reduceSum(d => d.cases);
 
-    const dateTotals = dateDimension.group().reduceSum(d => d.cases)
+    const totalCasesInTime = dateDimension.group().reduceSum(d => d.tot_cases)
+    const newCasesInTime = dateDimension.group().reduceSum(d => d.cases)
 
     // const indexAvgByMonthGroup = moveMonths.group().reduce(
     //     (p, v) => {
@@ -47,7 +51,7 @@ d3.csv('data.csv').then(data => {
     // );
 
     
-    console.log(countryTotals.all());
+    console.log(totalCasesByCountry.all());
     console.log(countryDimension);
     // debugger;
 
@@ -60,7 +64,7 @@ d3.csv('data.csv').then(data => {
         .height(400)
         .transitionDuration(500)
         .margins({top: 20, left: 10, right: 10, bottom: 20})
-        .group(countryTotals)
+        .group(totalCasesByCountry)
         .dimension(countryDimension)
         .elasticX(true)
         .cap(10)
@@ -73,20 +77,55 @@ d3.csv('data.csv').then(data => {
     totalCasesInTimeChart
         .turnOnControls(true)
         .controlsUseVisibility(true)
-        .curve(d3.curveLinear)
-        .width(990)
+        .renderHorizontalGridLines(true)
+        .width(790)
         .height(200)
+        .brushOn(false)
         .transitionDuration(500)
         .margins({top: 30, right: 50, bottom: 25, left: 40})
-        .dimension(dateDimension)
-        .mouseZoomable(true)
-        // .rangeChart(volumeChart)
         .x(d3.scaleTime().domain([minDate, maxDate]))
-        // .round(d3.timeMonth.round)
-        .xUnits(d3.timeMonths)
         .elasticY(true)
+        .legend(new dc.Legend().x(800).y(10).itemHeight(13).gap(5))
+        .dimension(dateDimension)
+        .group(totalCasesInTime)
+        .curve(d3.curveLinear)
+        .rangeChart(testChart)
+
+    newCasesInTimeChart
+        .turnOnControls(true)
+        .controlsUseVisibility(true)
         .renderHorizontalGridLines(true)
-        .group(dateTotals)
+        .width(790)
+        .height(200)
+        .brushOn(false)
+        .transitionDuration(500)
+        .margins({top: 30, right: 50, bottom: 25, left: 40})
+        .x(d3.scaleTime().domain([minDate, maxDate]))
+        .elasticY(true)
+        .legend(new dc.Legend().x(800).y(10).itemHeight(13).gap(5))
+        .dimension(dateDimension)
+        .group(newCasesInTime)
+        .curve(d3.curveLinear)
+        // .rangeChart(testChart)
+
+    testChart
+        .turnOnControls(true)
+        .controlsUseVisibility(true)
+        .renderHorizontalGridLines(true)
+        .width(790)
+        .height(100)
+        .transitionDuration(500)
+        .margins({top: 30, right: 50, bottom: 25, left: 40})
+        .x(d3.scaleTime().domain([minDate, maxDate]))
+        .elasticY(true)
+        .legend(new dc.Legend().x(800).y(10).itemHeight(13).gap(5))
+        .dimension(dateDimension)
+        .group(newCasesInTime)
+        .curve(d3.curveLinear)
+        
+        
+        
+        
 
 
     dc.renderAll();
