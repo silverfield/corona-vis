@@ -112,6 +112,7 @@ d3.csv('data.csv').then(data => {
             .x(d3.scaleTime().domain([minDate, maxDate]))
             .elasticX(true)
             .elasticY(true)
+            .mouseZoomable(true)
             .transitionDuration(500)
             .margins({top: 0, right: 50, bottom: 40, left: 70})
             .renderHorizontalGridLines(true)
