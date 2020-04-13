@@ -58,7 +58,7 @@ d3.csv('data.csv').then(data => {
         .elasticX(true)
         .controlsUseVisibility(true)
         .transitionDuration(500)
-        .margins({top: 0, left: 10, right: 10, bottom: 20})
+        .margins({top: 0, left: 10, right: 10, bottom: 45})
         .label(d => d.key)
         .title(d => d.value);
 
@@ -112,15 +112,24 @@ d3.csv('data.csv').then(data => {
             .x(d3.scaleTime().domain([minDate, maxDate]))
             .elasticX(true)
             .elasticY(true)
-            .mouseZoomable(true)
             .transitionDuration(500)
             .margins({top: 0, right: 50, bottom: 40, left: 70})
             .renderHorizontalGridLines(true)
             .controlsUseVisibility(true);
+    });
 
+    let allCharts = [...evolutionCharts];
+    allCharts.push(totalCasesByCountryChart);
+
+    allCharts.forEach((chart) => {
         chart.renderlet(function(chart){
+            let tickSelector = "g.tick text";
+            if (evolutionCharts.includes(chart)) {
+                tickSelector = "g.x text";
+            }
+
             chart
-                .selectAll("g.x text")
+                .selectAll(tickSelector)
                 .attr('transform', "rotate(-65) translate(-25 -10)");
         });
     });
@@ -149,8 +158,6 @@ d3.csv('data.csv').then(data => {
     //     });
     // });
 
-    let allCharts = [...evolutionCharts];
-    allCharts.push(totalCasesByCountryChart);
     
     window.resetAll = function() {
         allCharts.forEach(c => resetChart(c, false))
