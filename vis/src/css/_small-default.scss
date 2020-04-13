@@ -1,0 +1,78 @@
+body{
+    font-family: 'Didact Gothic', 'Lucida Grande', Tahoma, Sans-Serif;
+    background-color: $color-inco-lightest;
+    font-size: 19px;
+    line-height: 1.3em;
+    min-height: 100%;
+
+    display: flex;
+    flex-flow: column;
+    padding: 30px;
+} 
+
+html {
+    /* Prevent adjustments of font size after orientation changes in IE on Windows Phone and in iOS.  */
+    -webkit-text-size-adjust: 100%; 
+    -ms-text-size-adjust: 100%;
+
+    height: 100%;
+}
+
+/* ------------------------------------------------------------ */
+/* Header */
+/* ------------------------------------------------------------ */
+
+header {
+    background-color: $color-inco-medium;
+    padding: 20px;
+
+    h1 {
+        font-size: 2em;
+    }
+}
+
+/* ------------------------------------------------------------ */
+/* Body */
+/* ------------------------------------------------------------ */
+
+a {
+    color: $color-dark-strong;
+    font-weight: 700;
+    text-shadow: 0 0 3px white;
+}
+
+h5 {
+    font-size: 1.4em;
+}
+
+.dc-chart {
+
+}
+
+.country-bar {
+    height: 300px;
+}
+
+.evolution-chart {
+    width: 100%;
+}
+
+.evolution-top-row {
+    margin-top: 50px;
+}
+
+/* ------------------------------------------------------------ */
+/* Footer */
+/* ------------------------------------------------------------ */
+
+footer {
+    color: $color-dark-strong;
+    flex: 0 1 $footer-height;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.7em;
+    text-align: center;
+    background-color: $color-inco-medium;
+}
+  

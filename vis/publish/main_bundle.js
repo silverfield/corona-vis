@@ -1521,7 +1521,7 @@ module.exports = __webpack_require__(/*! ./crossfilter */ "./node_modules/crossf
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "body {\n  padding: 30px; }\n", ""]);
+exports.push([module.i, "/* \nhtml5doctor.com Reset Stylesheet\nv1.6.1\nLast Updated: 2010-09-17\nAuthor: Richard Clark - http://richclarkdesign.com \nTwitter: @rich_clark\n*/\nhtml, body, div, span, object, iframe,\nh1, h2, h3, h4, h5, h6, p, blockquote, pre,\nabbr, address, cite, code,\ndel, dfn, em, img, ins, kbd, q, samp,\nsmall, strong, sub, sup, var,\nb, i,\ndl, dt, dd, ol, ul, li,\nfieldset, form, label, legend,\ntable, caption, tbody, tfoot, thead, tr, th, td,\narticle, aside, canvas, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section, summary,\ntime, mark, audio, video {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  outline: 0;\n  font-size: 100%;\n  vertical-align: baseline;\n  background: transparent; }\n\nbody {\n  line-height: 1; }\n\narticle, aside, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section {\n  display: block; }\n\nnav ul {\n  list-style: none; }\n\nblockquote, q {\n  quotes: none; }\n\nblockquote:before, blockquote:after,\nq:before, q:after {\n  content: '';\n  content: none; }\n\na {\n  margin: 0;\n  padding: 0;\n  font-size: 100%;\n  vertical-align: baseline;\n  background: transparent; }\n\n/* change colours to suit your needs */\nins {\n  background-color: #ff9;\n  color: #000;\n  text-decoration: none; }\n\n/* change colours to suit your needs */\nmark {\n  background-color: #ff9;\n  color: #000;\n  font-style: italic;\n  font-weight: bold; }\n\ndel {\n  text-decoration: line-through; }\n\nabbr[title], dfn[title] {\n  border-bottom: 1px dotted;\n  cursor: help; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\n/* change border colour to suit your needs */\nhr {\n  display: block;\n  height: 1px;\n  border: 0;\n  border-top: 1px solid #cccccc;\n  margin: 1em 0;\n  padding: 0; }\n\ninput, select {\n  vertical-align: middle; }\n\nbody {\n  font-family: 'Didact Gothic', 'Lucida Grande', Tahoma, Sans-Serif;\n  background-color: #b6a9aa;\n  font-size: 19px;\n  line-height: 1.3em;\n  min-height: 100%;\n  display: flex;\n  flex-flow: column;\n  padding: 30px; }\n\nhtml {\n  /* Prevent adjustments of font size after orientation changes in IE on Windows Phone and in iOS.  */\n  -webkit-text-size-adjust: 100%;\n  -ms-text-size-adjust: 100%;\n  height: 100%; }\n\n/* ------------------------------------------------------------ */\n/* Header */\n/* ------------------------------------------------------------ */\nheader {\n  background-color: #9b786f;\n  padding: 20px; }\n  header h1 {\n    font-size: 2em; }\n\n/* ------------------------------------------------------------ */\n/* Body */\n/* ------------------------------------------------------------ */\na {\n  color: #331f3b;\n  font-weight: 700;\n  text-shadow: 0 0 3px white; }\n\nh5 {\n  font-size: 1.4em; }\n\n.country-bar {\n  height: 300px; }\n\n.evolution-chart {\n  width: 100%; }\n\n.evolution-top-row {\n  margin-top: 50px; }\n\n/* ------------------------------------------------------------ */\n/* Footer */\n/* ------------------------------------------------------------ */\nfooter {\n  color: #331f3b;\n  flex: 0 1 50px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  font-size: 0.7em;\n  text-align: center;\n  background-color: #9b786f; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -44321,70 +44321,113 @@ __webpack_require__.r(__webpack_exports__);
 
 
 window.dc = dc__WEBPACK_IMPORTED_MODULE_1__;
+window.d3 = d3__WEBPACK_IMPORTED_MODULE_0__;
 d3__WEBPACK_IMPORTED_MODULE_0__["csv"]('data.csv').then(data => {
-  window.totalCasesByCountryChart = new dc__WEBPACK_IMPORTED_MODULE_1__["RowChart"]('#totalCasesByCountryChart');
-  window.totalCasesInTimeChart = new dc__WEBPACK_IMPORTED_MODULE_1__["LineChart"]('#totalCasesInTimeChart');
-  window.newCasesInTimeChart = new dc__WEBPACK_IMPORTED_MODULE_1__["LineChart"]('#newCasesInTimeChart');
-  window.testChart = new dc__WEBPACK_IMPORTED_MODULE_1__["LineChart"]('#testChart'); // prep data ----------------------------------------
-
+  // prep data ----------------------------------------
   const dateFormatParser = d3__WEBPACK_IMPORTED_MODULE_0__["timeParse"]('%Y-%m-%d');
   data.forEach(d => {
     d.date = dateFormatParser(d.date);
-  }); // prep the cross filters ----------------------------------------
+  });
+  window.minDate = Math.min(...data.map(d => d.date));
+  window.maxDate = Math.max(...data.map(d => d.date));
+  document.getElementById('data-when').innerText = new Date(maxDate).toDateString(); // prep the cross filters ----------------------------------------
 
-  const mainNdx = crossfilter__WEBPACK_IMPORTED_MODULE_2__(data);
-  const all = mainNdx.groupAll();
-  const countryDimension = mainNdx.dimension(d => d.country);
-  const dateDimension = mainNdx.dimension(d => d.date);
-  const totalCasesByCountry = countryDimension.group().reduceSum(d => d.cases);
-  const totalCasesInTime = dateDimension.group().reduceSum(d => d.tot_cases);
-  const newCasesInTime = dateDimension.group().reduceSum(d => d.cases); // const indexAvgByMonthGroup = moveMonths.group().reduce(
-  //     (p, v) => {
-  //         ++p.days;
-  //         p.total += (v.open + v.close) / 2;
-  //         p.avg = Math.round(p.total / p.days);
-  //         return p;
-  //     },
-  //     (p, v) => {
-  //         --p.days;
-  //         p.total -= (v.open + v.close) / 2;
-  //         p.avg = p.days ? Math.round(p.total / p.days) : 0;
-  //         return p;
-  //     },
-  //     () => ({days: 0, total: 0, avg: 0})
-  // );
+  const cf = crossfilter__WEBPACK_IMPORTED_MODULE_2__(data);
+  const all = cf.groupAll();
+  let dimension, group; // - picker which metric looking at
+  // - ratio new cases/deaths
+  // - smoothing
+  // - search country
 
-  console.log(totalCasesByCountry.all());
-  console.log(countryDimension); // debugger;
-  // charts ----------------------------------------
+  function remove_empty(source_group) {
+    return {
+      all: function () {
+        return source_group.all().filter(function (d) {
+          return d.value != 0;
+        });
+      }
+    };
+  } // total by countries ----------------------------------------
 
-  totalCasesByCountryChart.turnOnControls(true).controlsUseVisibility(true).width(600).height(400).transitionDuration(500).margins({
-    top: 20,
+
+  window.totalCasesByCountryChart = new dc__WEBPACK_IMPORTED_MODULE_1__["RowChart"]('#totalCasesByCountryChart');
+  dimension = cf.dimension(d => d.country);
+  group = dimension.group().reduceSum(d => d.cases);
+  totalCasesByCountryChart.dimension(dimension).group(group).cap(10).elasticX(true).controlsUseVisibility(true).transitionDuration(500).margins({
+    top: 0,
     left: 10,
     right: 10,
     bottom: 20
-  }).group(totalCasesByCountry).dimension(countryDimension).elasticX(true).cap(10).label(d => d.key).title(d => d.value);
-  let minDate = Math.min(...data.map(d => d.date));
-  let maxDate = Math.max(...data.map(d => d.date));
-  totalCasesInTimeChart.turnOnControls(true).controlsUseVisibility(true).renderHorizontalGridLines(true).width(790).height(200).brushOn(false).transitionDuration(500).margins({
-    top: 30,
-    right: 50,
-    bottom: 25,
-    left: 40
-  }).x(d3__WEBPACK_IMPORTED_MODULE_0__["scaleTime"]().domain([minDate, maxDate])).elasticY(true).legend(new dc__WEBPACK_IMPORTED_MODULE_1__["Legend"]().x(800).y(10).itemHeight(13).gap(5)).dimension(dateDimension).group(totalCasesInTime).curve(d3__WEBPACK_IMPORTED_MODULE_0__["curveLinear"]).rangeChart(testChart);
-  newCasesInTimeChart.turnOnControls(true).controlsUseVisibility(true).renderHorizontalGridLines(true).width(790).height(200).brushOn(false).transitionDuration(500).margins({
-    top: 30,
-    right: 50,
-    bottom: 25,
-    left: 40
-  }).x(d3__WEBPACK_IMPORTED_MODULE_0__["scaleTime"]().domain([minDate, maxDate])).elasticY(true).legend(new dc__WEBPACK_IMPORTED_MODULE_1__["Legend"]().x(800).y(10).itemHeight(13).gap(5)).dimension(dateDimension).group(newCasesInTime).curve(d3__WEBPACK_IMPORTED_MODULE_0__["curveLinear"]); // .rangeChart(testChart)
+  }).label(d => d.key).title(d => d.value);
+  window.totalCasesInTimeChart = new dc__WEBPACK_IMPORTED_MODULE_1__["LineChart"]('#totalCasesInTimeChart');
+  dimension = cf.dimension(d => d.date);
+  group = dimension.group().reduceSum(d => d.tot_cases);
+  totalCasesInTimeChart.dimension(dimension).group(remove_empty(group));
+  window.newCasesInTimeChart = new dc__WEBPACK_IMPORTED_MODULE_1__["BarChart"]('#newCasesInTimeChart');
+  dimension = cf.dimension(d => d.date);
+  group = dimension.group().reduceSum(d => d.cases);
+  newCasesInTimeChart.dimension(dimension).group(remove_empty(group));
+  window.totalDeathsInTimeChart = new dc__WEBPACK_IMPORTED_MODULE_1__["BarChart"]('#totalDeathsInTimeChart');
+  dimension = cf.dimension(d => d.date);
+  group = dimension.group().reduceSum(d => d.tot_deaths);
+  totalDeathsInTimeChart.dimension(dimension).group(remove_empty(group)).colors(['red']);
+  window.newDeathsInTimeChart = new dc__WEBPACK_IMPORTED_MODULE_1__["BarChart"]('#newDeathsInTimeChart');
+  dimension = cf.dimension(d => d.date);
+  group = dimension.group().reduceSum(d => d.deaths);
+  newDeathsInTimeChart.dimension(dimension).group(remove_empty(group)).colors(['red']);
+  let evolutionCharts = [totalCasesInTimeChart, newCasesInTimeChart, totalDeathsInTimeChart, newDeathsInTimeChart];
+  evolutionCharts.forEach(chart => {
+    chart.x(d3__WEBPACK_IMPORTED_MODULE_0__["scaleTime"]().domain([minDate, maxDate])).elasticX(true).elasticY(true).transitionDuration(500).margins({
+      top: 0,
+      right: 50,
+      bottom: 40,
+      left: 70
+    }).renderHorizontalGridLines(true).controlsUseVisibility(true);
+    chart.renderlet(function (chart) {
+      chart.selectAll("g.x text").attr('transform', "rotate(-65) translate(-25 -10)");
+    });
+  }); // evolutionCharts.forEach((chart) => {
+  //     chart.on('filtered', function(filteredChart) {
+  //         let d = cf.dimension(d => d.date);
+  //         let g = d.group().reduceSum(d => d.cases);
+  //         let vals = g.all().filter((o) => o.value > 0);
+  //         let newMinDate = Math.min(...vals.map((o) => o.key));
+  //         let newMaxDate = Math.max(...vals.map((o) => o.key));
+  //         evolutionCharts.forEach((otherChart) => {
+  //             if (otherChart === filteredChart) {
+  //                 return;
+  //             }
+  //             otherChart.x(d3.scaleTime().domain([newMinDate, newMaxDate]))
+  //             otherChart.filters()
+  //             // otherChart.(null)
+  //             // console.log(extent)
+  //             // otherChart.brush().extent(extent)
+  //             // debugger;
+  //             // console.log(otherChart.brush())
+  //         });
+  //     });
+  // });
 
-  testChart.turnOnControls(true).controlsUseVisibility(true).renderHorizontalGridLines(true).width(790).height(100).transitionDuration(500).margins({
-    top: 30,
-    right: 50,
-    bottom: 25,
-    left: 40
-  }).x(d3__WEBPACK_IMPORTED_MODULE_0__["scaleTime"]().domain([minDate, maxDate])).elasticY(true).legend(new dc__WEBPACK_IMPORTED_MODULE_1__["Legend"]().x(800).y(10).itemHeight(13).gap(5)).dimension(dateDimension).group(newCasesInTime).curve(d3__WEBPACK_IMPORTED_MODULE_0__["curveLinear"]);
+  let allCharts = [...evolutionCharts];
+  allCharts.push(totalCasesByCountryChart);
+
+  window.resetAll = function () {
+    allCharts.forEach(c => resetChart(c, false));
+    dc__WEBPACK_IMPORTED_MODULE_1__["redrawAll"]();
+  };
+
+  window.resetChart = function (chart, redraw) {
+    if (evolutionCharts.includes(chart)) {
+      chart.filterAll(); // chart.x(d3.scaleTime().domain([minDate, maxDate]));
+    } else {
+      chart.filterAll();
+    }
+
+    if (redraw !== false) {
+      dc__WEBPACK_IMPORTED_MODULE_1__["redrawAll"]();
+    }
+  };
+
   dc__WEBPACK_IMPORTED_MODULE_1__["renderAll"]();
 });
 

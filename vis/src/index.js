@@ -6,13 +6,9 @@ import * as crossfilter from 'crossfilter';
 import './css/styles.scss';
 
 window.dc = dc;
+window.d3 = d3;
 
 d3.csv('data.csv').then(data => {
-    window.totalCasesByCountryChart = new dc.RowChart('#totalCasesByCountryChart');
-    window.totalCasesInTimeChart = new dc.LineChart('#totalCasesInTimeChart');
-    window.newCasesInTimeChart = new dc.LineChart('#newCasesInTimeChart');
-    window.testChart = new dc.LineChart('#testChart');
-
     // prep data ----------------------------------------
 
     const dateFormatParser = d3.timeParse('%Y-%m-%d');
@@ -21,112 +17,158 @@ d3.csv('data.csv').then(data => {
         d.date = dateFormatParser(d.date);
     });
 
+    window.minDate = Math.min(...data.map((d) => d.date));
+    window.maxDate = Math.max(...data.map((d) => d.date));
+
+    document.getElementById('data-when').innerText = (new Date(maxDate)).toDateString();
+
     // prep the cross filters ----------------------------------------
 
-    const mainNdx = crossfilter(data);
-    const all = mainNdx.groupAll();
+    const cf = crossfilter(data);
+    const all = cf.groupAll();
 
-    const countryDimension = mainNdx.dimension(d => d.country);
-    const dateDimension = mainNdx.dimension(d => d.date);
+    let dimension, group;
 
-    const totalCasesByCountry = countryDimension.group().reduceSum(d => d.cases);
+    // - picker which metric looking at
+    // - ratio new cases/deaths
+    // - smoothing
+    // - search country
 
-    const totalCasesInTime = dateDimension.group().reduceSum(d => d.tot_cases)
-    const newCasesInTime = dateDimension.group().reduceSum(d => d.cases)
+    function remove_empty(source_group) {
+        return {
+            all:function () {
+                return source_group.all().filter(function(d) {
+                    return d.value != 0;
+                });
+            }
+        };
+    }
 
-    // const indexAvgByMonthGroup = moveMonths.group().reduce(
-    //     (p, v) => {
-    //         ++p.days;
-    //         p.total += (v.open + v.close) / 2;
-    //         p.avg = Math.round(p.total / p.days);
-    //         return p;
-    //     },
-    //     (p, v) => {
-    //         --p.days;
-    //         p.total -= (v.open + v.close) / 2;
-    //         p.avg = p.days ? Math.round(p.total / p.days) : 0;
-    //         return p;
-    //     },
-    //     () => ({days: 0, total: 0, avg: 0})
-    // );
+    // total by countries ----------------------------------------
 
-    
-    console.log(totalCasesByCountry.all());
-    console.log(countryDimension);
-    // debugger;
+    window.totalCasesByCountryChart = new dc.RowChart('#totalCasesByCountryChart');
 
-    // charts ----------------------------------------
+    dimension = cf.dimension(d => d.country)
+    group = dimension.group().reduceSum(d => d.cases);
 
     totalCasesByCountryChart
-        .turnOnControls(true)
-        .controlsUseVisibility(true)
-        .width(600)
-        .height(400)
-        .transitionDuration(500)
-        .margins({top: 20, left: 10, right: 10, bottom: 20})
-        .group(totalCasesByCountry)
-        .dimension(countryDimension)
-        .elasticX(true)
+        .dimension(dimension)
+        .group(group)
         .cap(10)
+        .elasticX(true)
+        .controlsUseVisibility(true)
+        .transitionDuration(500)
+        .margins({top: 0, left: 10, right: 10, bottom: 20})
         .label(d => d.key)
         .title(d => d.value);
 
+    window.totalCasesInTimeChart = new dc.LineChart('#totalCasesInTimeChart');
 
-    let minDate = Math.min(...data.map((d) => d.date));
-    let maxDate = Math.max(...data.map((d) => d.date));
+    dimension = cf.dimension(d => d.date);
+    group = dimension.group().reduceSum(d => d.tot_cases)
+
     totalCasesInTimeChart
-        .turnOnControls(true)
-        .controlsUseVisibility(true)
-        .renderHorizontalGridLines(true)
-        .width(790)
-        .height(200)
-        .brushOn(false)
-        .transitionDuration(500)
-        .margins({top: 30, right: 50, bottom: 25, left: 40})
-        .x(d3.scaleTime().domain([minDate, maxDate]))
-        .elasticY(true)
-        .legend(new dc.Legend().x(800).y(10).itemHeight(13).gap(5))
-        .dimension(dateDimension)
-        .group(totalCasesInTime)
-        .curve(d3.curveLinear)
-        .rangeChart(testChart)
+        .dimension(dimension)
+        .group(remove_empty(group));
+
+    window.newCasesInTimeChart = new dc.BarChart('#newCasesInTimeChart');
+    
+    dimension = cf.dimension(d => d.date);
+    group = dimension.group().reduceSum(d => d.cases)
 
     newCasesInTimeChart
-        .turnOnControls(true)
-        .controlsUseVisibility(true)
-        .renderHorizontalGridLines(true)
-        .width(790)
-        .height(200)
-        .brushOn(false)
-        .transitionDuration(500)
-        .margins({top: 30, right: 50, bottom: 25, left: 40})
-        .x(d3.scaleTime().domain([minDate, maxDate]))
-        .elasticY(true)
-        .legend(new dc.Legend().x(800).y(10).itemHeight(13).gap(5))
-        .dimension(dateDimension)
-        .group(newCasesInTime)
-        .curve(d3.curveLinear)
-        // .rangeChart(testChart)
+        .dimension(dimension)
+        .group(remove_empty(group));
 
-    testChart
-        .turnOnControls(true)
-        .controlsUseVisibility(true)
-        .renderHorizontalGridLines(true)
-        .width(790)
-        .height(100)
-        .transitionDuration(500)
-        .margins({top: 30, right: 50, bottom: 25, left: 40})
-        .x(d3.scaleTime().domain([minDate, maxDate]))
-        .elasticY(true)
-        .legend(new dc.Legend().x(800).y(10).itemHeight(13).gap(5))
-        .dimension(dateDimension)
-        .group(newCasesInTime)
-        .curve(d3.curveLinear)
-        
-        
-        
-        
+    window.totalDeathsInTimeChart = new dc.BarChart('#totalDeathsInTimeChart');
 
+    dimension = cf.dimension(d => d.date);
+    group = dimension.group().reduceSum(d => d.tot_deaths)
 
+    totalDeathsInTimeChart
+        .dimension(dimension)
+        .group(remove_empty(group))
+        .colors(['red']);
+
+    window.newDeathsInTimeChart = new dc.BarChart('#newDeathsInTimeChart');
+
+    dimension = cf.dimension(d => d.date);
+    group = dimension.group().reduceSum(d => d.deaths)
+
+    newDeathsInTimeChart
+        .dimension(dimension)
+        .group(remove_empty(group))
+        .colors(['red']);
+
+    let evolutionCharts = [
+        totalCasesInTimeChart, 
+        newCasesInTimeChart,
+        totalDeathsInTimeChart,
+        newDeathsInTimeChart
+    ]
+
+    evolutionCharts.forEach((chart) => {
+        chart
+            .x(d3.scaleTime().domain([minDate, maxDate]))
+            .elasticX(true)
+            .elasticY(true)
+            .transitionDuration(500)
+            .margins({top: 0, right: 50, bottom: 40, left: 70})
+            .renderHorizontalGridLines(true)
+            .controlsUseVisibility(true);
+
+        chart.renderlet(function(chart){
+            chart
+                .selectAll("g.x text")
+                .attr('transform', "rotate(-65) translate(-25 -10)");
+        });
+    });
+    // evolutionCharts.forEach((chart) => {
+    //     chart.on('filtered', function(filteredChart) {
+    //         let d = cf.dimension(d => d.date);
+    //         let g = d.group().reduceSum(d => d.cases);
+    //         let vals = g.all().filter((o) => o.value > 0);
+        
+    //         let newMinDate = Math.min(...vals.map((o) => o.key));
+    //         let newMaxDate = Math.max(...vals.map((o) => o.key));
+
+    //         evolutionCharts.forEach((otherChart) => {
+    //             if (otherChart === filteredChart) {
+    //                 return;
+    //             }
+
+    //             otherChart.x(d3.scaleTime().domain([newMinDate, newMaxDate]))
+    //             otherChart.filters()
+    //             // otherChart.(null)
+    //             // console.log(extent)
+    //             // otherChart.brush().extent(extent)
+    //             // debugger;
+    //             // console.log(otherChart.brush())
+    //         });
+    //     });
+    // });
+
+    let allCharts = [...evolutionCharts];
+    allCharts.push(totalCasesByCountryChart);
+    
+    window.resetAll = function() {
+        allCharts.forEach(c => resetChart(c, false))
+        dc.redrawAll();
+    }
+
+    window.resetChart = function(chart, redraw) {
+        if (evolutionCharts.includes(chart)) {
+            chart.filterAll();
+            // chart.x(d3.scaleTime().domain([minDate, maxDate]));
+        }
+        else {
+            chart.filterAll()
+        }
+
+        if (redraw !== false) {
+            dc.redrawAll();
+        }
+    };
+    
     dc.renderAll();
 })

@@ -1,12 +1,8 @@
 import pandas as pd
 import urllib.request
+from common import *
 
-import os
-
-this_folder = os.path.dirname(__file__)
-root_folder = os.path.realpath(f'{this_folder}/..')
-
-DATA_PATH = f'{root_folder}/data/world.xlsx'
+DATA_PATH = f'{get_root()}/data/world.xlsx'
 
 
 # get the data
@@ -50,6 +46,6 @@ print(df.head())
 
 # save data
 
-df.to_csv(f'{root_folder}/vis/src/data.csv')
-df.to_csv(f'{root_folder}/data/data.csv')
+df.to_csv(f'{get_root()}/vis/src/data.csv')
+df.to_csv(f'{get_root()}/data/data.csv')
 
