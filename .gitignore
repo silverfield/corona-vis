@@ -1,4 +1,5 @@
 *.xlsx
 node_modules
-*.csv
+data
+vis/src/*.csv
 vis/dist
