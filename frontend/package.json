@@ -11,6 +11,8 @@
     ]
   },
   "scripts": {
+    "heroku-prebuild": "npm install",
+    "heroku-postbuild": "./node_modules/.bin/webpack",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "./node_modules/.bin/webpack --watch",
     "watch": "npm-watch",
