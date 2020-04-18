@@ -8,7 +8,7 @@ import './css/styles.scss';
 window.dc = dc;
 window.d3 = d3;
 
-d3.csv('data.csv').then(data => {
+d3.csv('/data').then(data => {
     // prep data ----------------------------------------
 
     const dateFormatParser = d3.timeParse('%Y-%m-%d');

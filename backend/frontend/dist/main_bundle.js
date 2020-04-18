@@ -1521,7 +1521,7 @@ module.exports = __webpack_require__(/*! ./crossfilter */ "./node_modules/crossf
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "/* \nhtml5doctor.com Reset Stylesheet\nv1.6.1\nLast Updated: 2010-09-17\nAuthor: Richard Clark - http://richclarkdesign.com \nTwitter: @rich_clark\n*/\nhtml, body, div, span, object, iframe,\nh1, h2, h3, h4, h5, h6, p, blockquote, pre,\nabbr, address, cite, code,\ndel, dfn, em, img, ins, kbd, q, samp,\nsmall, strong, sub, sup, var,\nb, i,\ndl, dt, dd, ol, ul, li,\nfieldset, form, label, legend,\ntable, caption, tbody, tfoot, thead, tr, th, td,\narticle, aside, canvas, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section, summary,\ntime, mark, audio, video {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  outline: 0;\n  font-size: 100%;\n  vertical-align: baseline;\n  background: transparent; }\n\nbody {\n  line-height: 1; }\n\narticle, aside, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section {\n  display: block; }\n\nnav ul {\n  list-style: none; }\n\nblockquote, q {\n  quotes: none; }\n\nblockquote:before, blockquote:after,\nq:before, q:after {\n  content: '';\n  content: none; }\n\na {\n  margin: 0;\n  padding: 0;\n  font-size: 100%;\n  vertical-align: baseline;\n  background: transparent; }\n\n/* change colours to suit your needs */\nins {\n  background-color: #ff9;\n  color: #000;\n  text-decoration: none; }\n\n/* change colours to suit your needs */\nmark {\n  background-color: #ff9;\n  color: #000;\n  font-style: italic;\n  font-weight: bold; }\n\ndel {\n  text-decoration: line-through; }\n\nabbr[title], dfn[title] {\n  border-bottom: 1px dotted;\n  cursor: help; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\n/* change border colour to suit your needs */\nhr {\n  display: block;\n  height: 1px;\n  border: 0;\n  border-top: 1px solid #cccccc;\n  margin: 1em 0;\n  padding: 0; }\n\ninput, select {\n  vertical-align: middle; }\n\nbody {\n  font-family: 'Didact Gothic', 'Lucida Grande', Tahoma, Sans-Serif;\n  background-color: #b6a9aa;\n  font-size: 19px;\n  line-height: 1.3em;\n  min-height: 100%;\n  display: flex;\n  flex-flow: column;\n  padding: 30px; }\n\nhtml {\n  /* Prevent adjustments of font size after orientation changes in IE on Windows Phone and in iOS.  */\n  -webkit-text-size-adjust: 100%;\n  -ms-text-size-adjust: 100%;\n  height: 100%; }\n\n/* ------------------------------------------------------------ */\n/* Header */\n/* ------------------------------------------------------------ */\nheader {\n  background-color: #9b786f;\n  padding: 20px; }\n  header h1 {\n    font-size: 2em; }\n\n/* ------------------------------------------------------------ */\n/* Body */\n/* ------------------------------------------------------------ */\na {\n  color: #331f3b;\n  font-weight: 700;\n  text-shadow: 0 0 3px white; }\n\nh5 {\n  font-size: 1.4em; }\n\n.country-bar {\n  height: 300px; }\n\n.evolution-chart {\n  width: 100%; }\n\n.evolution-top-row {\n  margin-top: 50px; }\n\n/* ------------------------------------------------------------ */\n/* Footer */\n/* ------------------------------------------------------------ */\nfooter {\n  color: #331f3b;\n  flex: 0 1 50px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  font-size: 0.7em;\n  text-align: center;\n  background-color: #9b786f; }\n", ""]);
+exports.push([module.i, "/* \nhtml5doctor.com Reset Stylesheet\nv1.6.1\nLast Updated: 2010-09-17\nAuthor: Richard Clark - http://richclarkdesign.com \nTwitter: @rich_clark\n*/\nhtml, body, div, span, object, iframe,\nh1, h2, h3, h4, h5, h6, p, blockquote, pre,\nabbr, address, cite, code,\ndel, dfn, em, img, ins, kbd, q, samp,\nsmall, strong, sub, sup, var,\nb, i,\ndl, dt, dd, ol, ul, li,\nfieldset, form, label, legend,\ntable, caption, tbody, tfoot, thead, tr, th, td,\narticle, aside, canvas, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section, summary,\ntime, mark, audio, video {\n  margin: 0;\n  padding: 0;\n  border: 0;\n  outline: 0;\n  font-size: 100%;\n  vertical-align: baseline;\n  background: transparent; }\n\nbody {\n  line-height: 1; }\n\narticle, aside, details, figcaption, figure,\nfooter, header, hgroup, menu, nav, section {\n  display: block; }\n\nnav ul {\n  list-style: none; }\n\nblockquote, q {\n  quotes: none; }\n\nblockquote:before, blockquote:after,\nq:before, q:after {\n  content: '';\n  content: none; }\n\na {\n  margin: 0;\n  padding: 0;\n  font-size: 100%;\n  vertical-align: baseline;\n  background: transparent; }\n\n/* change colours to suit your needs */\nins {\n  background-color: #ff9;\n  color: #000;\n  text-decoration: none; }\n\n/* change colours to suit your needs */\nmark {\n  background-color: #ff9;\n  color: #000;\n  font-style: italic;\n  font-weight: bold; }\n\ndel {\n  text-decoration: line-through; }\n\nabbr[title], dfn[title] {\n  border-bottom: 1px dotted;\n  cursor: help; }\n\ntable {\n  border-collapse: collapse;\n  border-spacing: 0; }\n\n/* change border colour to suit your needs */\nhr {\n  display: block;\n  height: 1px;\n  border: 0;\n  border-top: 1px solid #cccccc;\n  margin: 1em 0;\n  padding: 0; }\n\ninput, select {\n  vertical-align: middle; }\n\nbody {\n  font-family: 'Didact Gothic', 'Lucida Grande', Tahoma, Sans-Serif;\n  background-color: #b6a9aa;\n  font-size: 19px;\n  line-height: 1.3em;\n  min-height: 100%;\n  display: flex;\n  flex-flow: column;\n  padding: 30px; }\n\nhtml {\n  /* Prevent adjustments of font size after orientation changes in IE on Windows Phone and in iOS.  */\n  -webkit-text-size-adjust: 100%;\n  -ms-text-size-adjust: 100%;\n  height: 100%; }\n\n/* ------------------------------------------------------------ */\n/* Header */\n/* ------------------------------------------------------------ */\nheader {\n  background-color: #9b786f;\n  padding: 20px; }\n  header h1 {\n    font-size: 2em; }\n\n/* ------------------------------------------------------------ */\n/* Body */\n/* ------------------------------------------------------------ */\na {\n  color: #331f3b;\n  font-weight: 700;\n  text-shadow: 0 0 3px white; }\n\nh5 {\n  font-size: 1.4em; }\n\n.country-bar {\n  height: 300px; }\n\n.evolution-chart {\n  width: 100%; }\n\n.evolution-top-row {\n  margin-top: 50px; }\n\n/* ------------------------------------------------------------ */\n/* Footer */\n/* ------------------------------------------------------------ */\nfooter {\n  margin-top: 30px;\n  color: #331f3b;\n  flex: 0 1 50px;\n  flex-direction: column;\n  justify-content: center;\n  align-items: center;\n  font-size: 0.7em;\n  text-align: center;\n  background-color: #9b786f; }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -44322,7 +44322,7 @@ __webpack_require__.r(__webpack_exports__);
 
 window.dc = dc__WEBPACK_IMPORTED_MODULE_1__;
 window.d3 = d3__WEBPACK_IMPORTED_MODULE_0__;
-d3__WEBPACK_IMPORTED_MODULE_0__["csv"]('data.csv').then(data => {
+d3__WEBPACK_IMPORTED_MODULE_0__["csv"]('/data').then(data => {
   // prep data ----------------------------------------
   const dateFormatParser = d3__WEBPACK_IMPORTED_MODULE_0__["timeParse"]('%Y-%m-%d');
   data.forEach(d => {
@@ -44357,7 +44357,7 @@ d3__WEBPACK_IMPORTED_MODULE_0__["csv"]('data.csv').then(data => {
     top: 0,
     left: 10,
     right: 10,
-    bottom: 20
+    bottom: 45
   }).label(d => d.key).title(d => d.value);
   window.totalCasesInTimeChart = new dc__WEBPACK_IMPORTED_MODULE_1__["LineChart"]('#totalCasesInTimeChart');
   dimension = cf.dimension(d => d.date);
@@ -44383,8 +44383,18 @@ d3__WEBPACK_IMPORTED_MODULE_0__["csv"]('data.csv').then(data => {
       bottom: 40,
       left: 70
     }).renderHorizontalGridLines(true).controlsUseVisibility(true);
+  });
+  let allCharts = [...evolutionCharts];
+  allCharts.push(totalCasesByCountryChart);
+  allCharts.forEach(chart => {
     chart.renderlet(function (chart) {
-      chart.selectAll("g.x text").attr('transform', "rotate(-65) translate(-25 -10)");
+      let tickSelector = "g.tick text";
+
+      if (evolutionCharts.includes(chart)) {
+        tickSelector = "g.x text";
+      }
+
+      chart.selectAll(tickSelector).attr('transform', "rotate(-65) translate(-25 -10)");
     });
   }); // evolutionCharts.forEach((chart) => {
   //     chart.on('filtered', function(filteredChart) {
@@ -44407,9 +44417,6 @@ d3__WEBPACK_IMPORTED_MODULE_0__["csv"]('data.csv').then(data => {
   //         });
   //     });
   // });
-
-  let allCharts = [...evolutionCharts];
-  allCharts.push(totalCasesByCountryChart);
 
   window.resetAll = function () {
     allCharts.forEach(c => resetChart(c, false));

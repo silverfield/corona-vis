@@ -1,0 +1,5 @@
+pandas
+flask
+gunicorn
+# plotly
+# ipywidgets

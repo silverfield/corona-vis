@@ -37,7 +37,7 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin([
       { from: './src/index.html', to: 'index.html' },
-      { from: './src/data.csv', to: 'data.csv' },
+      // { from: './src/data.csv', to: 'data.csv' },
     ]),
   ],
   // watch: true,
