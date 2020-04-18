@@ -28,7 +28,14 @@
 <header>
     <h1>Covid-19 visualisation</h1>
 
-    Powered by <a href="https://dc-js.github.io/dc.js/">dc.js</a> library. <br/>
+    <div class="float-right">
+        Made by Frantisek Hajnovic <br/>
+
+        Powered by <a href="https://dc-js.github.io/dc.js/">dc.js</a>, 
+        <a href="https://flask.palletsprojects.com/en/1.1.x/quickstart/">flask</a>
+        and <a href="https://heroku.com/">heroku</a>
+    </div>
+    
 
     Using data from <span id="data-when">N/A</span> <br/><br/>
 
@@ -38,65 +45,70 @@
 </header>
 
 <body>
-    <div class="row">
-        <div class="col-md-12">
-            <h5>Total cases by country (top 10)</h5>
-            <div id='totalCasesByCountryChart' class="country-bar">
-                <a class='reset'
-                    href='javascript:resetChart(totalCasesByCountryChart);'
-                    style='visibility: hidden;'
-                >
-                    reset
-                </a>
-            </div>
-        </div>
+    <div class="loader-container">
+        <div id="loader" class="loader"></div>
     </div>
-    <div class="row evolution-top-row">
-        <div class="col-md-6">
-            <h5>Total cases in time</h5>
-            <div id='totalCasesInTimeChart' class="evolution-chart">
-                <a class='reset'
-                    href='javascript:resetChart(totalCasesInTimeChart);'
-                    style='visibility: hidden;'
-                >
-                    reset
-                </a>
+    <div id="content" style="display: none;"> 
+        <div class="row">
+            <div class="col-md-12">
+                <h5>Total cases by country (top 10)</h5>
+                <div id='totalCasesByCountryChart' class="country-bar">
+                    <a class='reset'
+                        href='javascript:resetChart(totalCasesByCountryChart);'
+                        style='visibility: hidden;'
+                    >
+                        reset
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <h5>New cases in time</h5>
-            <div id='newCasesInTimeChart' class="evolution-chart">
-                <a class='reset'
-                    href='javascript:resetChart(newCasesInTimeChart);'
-                    style='visibility: hidden;'
-                >
-                    reset
-                </a>
+        <div class="row evolution-top-row">
+            <div class="col-md-6">
+                <h5>Total cases in time</h5>
+                <div id='totalCasesInTimeChart' class="evolution-chart">
+                    <a class='reset'
+                        href='javascript:resetChart(totalCasesInTimeChart);'
+                        style='visibility: hidden;'
+                    >
+                        reset
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5>New cases in time</h5>
+                <div id='newCasesInTimeChart' class="evolution-chart">
+                    <a class='reset'
+                        href='javascript:resetChart(newCasesInTimeChart);'
+                        style='visibility: hidden;'
+                    >
+                        reset
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            <h5>Total deaths in time</h5>
-            <div id='totalDeathsInTimeChart' class="evolution-chart">
-                <a class='reset'
-                    href='javascript:resetChart(totalDeathsInTimeChart);'
-                    style='visibility: hidden;'
-                >
-                    reset
-                </a>
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Total deaths in time</h5>
+                <div id='totalDeathsInTimeChart' class="evolution-chart">
+                    <a class='reset'
+                        href='javascript:resetChart(totalDeathsInTimeChart);'
+                        style='visibility: hidden;'
+                    >
+                        reset
+                    </a>
+                </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <h5>New deaths in time</h5>
-            <div id='newDeathsInTimeChart' class="evolution-chart">
-                <a class='reset'
-                    href='javascript:resetChart(newDeathsInTimeChart);'
-                    style='visibility: hidden;'
-                >
-                    reset
-                </a>
-            </div>    
+            <div class="col-md-6">
+                <h5>New deaths in time</h5>
+                <div id='newDeathsInTimeChart' class="evolution-chart">
+                    <a class='reset'
+                        href='javascript:resetChart(newDeathsInTimeChart);'
+                        style='visibility: hidden;'
+                    >
+                        reset
+                    </a>
+                </div>    
+            </div>
         </div>
     </div>
 </body>

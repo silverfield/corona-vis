@@ -4,11 +4,14 @@ import * as d3 from "d3";
 import * as dc from 'dc';
 import * as crossfilter from 'crossfilter';
 import './css/styles.scss';
-
 window.dc = dc;
 window.d3 = d3;
 
-d3.csv('/data').then(data => {
+$(document).ready(function() {
+    
+});
+
+d3.csv('/data').then(data => {    
     // prep data ----------------------------------------
 
     const dateFormatParser = d3.timeParse('%Y-%m-%d');
@@ -178,5 +181,7 @@ d3.csv('/data').then(data => {
         }
     };
     
+    $('#loader').hide();
+    $('#content').show();
     dc.renderAll();
 })

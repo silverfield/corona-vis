@@ -20,8 +20,6 @@ One off:
 * heroku app `corona-vis-prod`
 * `heroku buildpacks:set heroku/python --app corona-vis-prod`
 * `heroku buildpacks:add --index 1 heroku/nodejs --app corona-vis-prod`
-
-
 * `git push heroku master`
 
 https://realpython.com/flask-by-example-part-1-project-setup/ 
