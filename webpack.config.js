@@ -4,7 +4,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = {
   mode: 'development',
   entry: {
-    main_bundle: "./src/index.js",
+    main_bundle: "./frontend/src/index.js",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -36,7 +36,7 @@ module.exports = {
   },
   plugins: [
     new CopyWebpackPlugin([
-      { from: './src/index.html', to: 'index.html' },
+      { from: './frontend/src/index.html', to: 'index.html' },
       // { from: './src/data.csv', to: 'data.csv' },
     ]),
   ],
