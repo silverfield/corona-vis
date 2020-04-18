@@ -1,5 +1,6 @@
 pandas
 flask
 gunicorn
+xlrd
 # plotly
 # ipywidgets
