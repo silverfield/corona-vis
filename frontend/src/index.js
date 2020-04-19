@@ -10,7 +10,6 @@ window.d3 = d3;
 
 $(document).ready(function() {
     jQuery.get('/countries', function(countries) {
-        console.log(countries)
         autocomplete(document.getElementById("search-country"), countries['countries']);
     });
 
@@ -85,8 +84,6 @@ function reloadChart() {
             .margins({top: 0, left: 10, right: 10, bottom: 45})
             .label(d => d.key)
             .title(d => d.value);
-    
-
 
         // evolution graphs ----------------------------------------
 
@@ -138,6 +135,7 @@ function reloadChart() {
         evolutionCharts.forEach((chart) => {
             chart
                 .x(d3.scaleTime().domain([minDate, maxDate]))
+                .height(150)
                 .elasticX(true)
                 .elasticY(true)
                 .transitionDuration(500)
@@ -146,15 +144,116 @@ function reloadChart() {
                 .controlsUseVisibility(true);
         });
 
+        // mobility chart
+
+        window.mobilityChart = new dc.CompositeChart('#mobilityChart');
+    
+        function getDimGroup(accessor) {
+            function reduceAdd(p, v) {
+                if (v[accessor] !== "") {
+                    ++p.count;
+                    if (p.total === null) {
+                        p.total = 0;
+                    }
+                    p.total += Number(v[accessor]);
+                }
+                return p;
+            }
+            
+            function reduceRemove(p, v) {
+                if (v[accessor] !== "") {
+                    --p.count;
+                    if (p.count === 0) {
+                        p.total = null;
+                    }
+                    else {
+                        if (p.total === null) {
+                            p.total = 0;
+                        }
+                        p.total -= Number(v[accessor]);
+                    }
+                }
+                return p;
+            }
+            
+            function reduceInitial() {
+                return {count: 0, total: null};
+            }
+
+            let dimension = cf.dimension(d => d.date);
+            let group = dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
+            let filteredGroup = {
+                'all': function () {
+                    return group.all().filter(function(d) {
+                        return d.value.total !== null;
+                    })
+                }
+            };
+
+            return [dimension, filteredGroup];
+        }
+        
+        let accessors = [
+            {
+                'accessor': 'pc_retail_and_recreation',
+                'color': 'red'
+            },
+            {
+                'accessor': 'pc_grocery_and_pharmacy',
+                'color': 'blue'
+            },
+            {
+                'accessor': 'pc_parks',
+                'color': 'orange'
+            },
+            {
+                'accessor': 'pc_transit_stations',
+                'color': 'yellow'
+            },
+            {
+                'accessor': 'pc_workplaces',
+                'color': 'green'
+            },
+            {
+                'accessor': 'pc_residential',
+                'color': 'navy'
+            },
+        ];
+        let composeCharts = accessors.map((o) => {
+            let [dimension, group] = getDimGroup(o.accessor);
+
+            return new dc.LineChart(mobilityChart)
+                .dimension(dimension)
+                .colors(o.color)
+                .valueAccessor(function(p) { return p.value.count > 0 ? p.value.total / p.value.count : null; })
+                .group(group, o.accessor)
+                .dashStyle([2,2])
+        });
+
+        mobilityChart
+            .x(d3.scaleTime().domain([minDate, maxDate]))
+            .height(300)
+            .elasticX(true)
+            .elasticY(true)
+            .transitionDuration(500)
+            .margins({top: 0, right: 50, bottom: 40, left: 70})
+            .yAxisPadding(70)
+            .renderHorizontalGridLines(true)
+            .controlsUseVisibility(true)
+            .legend(dc.legend().x(100).y(0).itemHeight(13).gap(5))
+            .compose(composeCharts)
+            .brushOn(false)
+
         // rotate ticks
     
         let allCharts = [...evolutionCharts];
         allCharts.push(totalCasesByCountryChart);
+        allCharts.push(mobilityChart); 
     
         allCharts.forEach((chart) => {
             chart.renderlet(function(chart){
                 let tickSelector = "g.tick text";
-                if (evolutionCharts.includes(chart)) {
+                if (evolutionCharts.includes(chart) || chart === mobilityChart) {
                     tickSelector = "g.x text";
                 }
     

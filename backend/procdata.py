@@ -18,7 +18,7 @@ def get_google_mobility_df(covid_df):
     # we use country as written in Covid dataset whenever possible - the rest we drop
     df = df.join(covid_countries.set_index('country_id'), on='country_region_code')
     df['country_region'] = df[['country', 'country_region']].fillna(method='bfill', axis=1).iloc[:, 0]
-    df = df[df['country'].isin(covid_countries['country'])]
+    df = df[df['country_region'].isin(covid_countries['country'])]
 
     del df['country']
     del df['country_region_code']
@@ -32,7 +32,6 @@ def get_google_mobility_df(covid_df):
     for col in df.columns:
         if col.endswith(to_rep):
             df = df.rename(columns={col: 'pc_' + col.replace(to_rep, '')})
-    
 
     return df
 

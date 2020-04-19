@@ -13,6 +13,9 @@
 
     <meta name="author" content="Fero Hajnovic" />
 
+    <link rel="shortcut icon" href="">
+
+
     <link href='https://fonts.googleapis.com/css?family=Didact Gothic' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -28,16 +31,20 @@
 <header>
     <h1>Covid-19 visualisation</h1>
 
-    <div class="float-right">
-        Made by Frantisek Hajnovic <br/>
-
-        Powered by <a href="https://dc-js.github.io/dc.js/">dc.js</a>, 
-        <a href="https://flask.palletsprojects.com/en/1.1.x/quickstart/">flask</a>
-        and <a href="https://heroku.com/">heroku</a>
-    </div>
+    <div class="flex-container">
+        <div>
+            Data from <a href="https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide">ECDC</a> and 
+            <a href="https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv">Google</a> <br>
+            Last update: <span id="data-when">(loading)</span>
+        </div>
     
-
-    Using data from <span id="data-when">N/A</span> <br/><br/>
+        <div>
+            Made by Frantisek Hajnovic <br/>
+            Powered by <a href="https://dc-js.github.io/dc.js/">dc.js</a>, 
+            <a href="https://flask.palletsprojects.com/en/1.1.x/quickstart/">flask</a>
+            and <a href="https://heroku.com/">heroku</a>
+        </div>
+    </div>
 </header>
 
 <body>
@@ -126,11 +133,24 @@
                 </div>    
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h5>Google mobility (% change from baseline)</h5>
+                <div id='mobilityChart' class="evolution-chart">
+                    <a class='reset'
+                        href='javascript:resetChart(mobilityChart);'
+                        style='visibility: hidden;'
+                    >
+                        reset
+                    </a>
+                </div>    
+            </div>
+        </div>
     </div>
 </body>
 <footer>
     design &amp; development by Frantisek Hajnovic<br/>
-    copyright © 2020, all rights reserved <br/>
+    copyright © 2020<br/>
 </footer>
 </html>
 

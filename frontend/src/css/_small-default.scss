@@ -70,11 +70,12 @@ a {
 }
 
 h5 {
-    font-size: 1.2em;
+    font-size: 1em;
 }
 
 .dc-chart {
-
+    margin-top: -15px;
+    text-align: right;
 }
 
 .country-bar {
@@ -91,6 +92,15 @@ h5 {
 
 .reset-all-div {
     text-align: center;
+}
+
+.flex-container {
+  display: flex;
+  flex-wrap: wrap;
+
+  * {
+    flex-grow: 1;
+  }
 }
 
 /* ------------------------------------------------------------ */
