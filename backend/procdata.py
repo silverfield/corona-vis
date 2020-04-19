@@ -7,7 +7,11 @@ DATA_PATH = f'{get_root()}/data/world.xlsx'
 
 def get_google_mobility_df(covid_df):
     url = 'https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv'
-    df = pd.read_csv(url)
+    
+    df = pd.read_csv(url, nrows=1)
+    dtypes = {col: 'float' if col.endswith('baseline') else 'object' for col in df.columns}
+
+    df = pd.read_csv(url, dtype=dtypes)
 
     covid_countries = covid_df[['country_id', 'country']].drop_duplicates()
 
