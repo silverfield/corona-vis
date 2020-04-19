@@ -23,3 +23,9 @@ One off:
 * `git push heroku master`
 
 https://realpython.com/flask-by-example-part-1-project-setup/ 
+
+
+TODO
+
+- Google mobility reports, Apple
+- Stringency measures

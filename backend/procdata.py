@@ -28,6 +28,12 @@ def get_google_mobility_df(covid_df):
 
     df = df.rename(columns={'country_region': 'country'})
 
+    to_rep = '_percent_change_from_baseline'
+    for col in df.columns:
+        if col.endswith(to_rep):
+            df = df.rename(columns={col: 'pc_' + col.replace(to_rep, '')})
+    
+
     return df
 
 

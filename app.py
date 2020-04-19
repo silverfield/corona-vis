@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 import backend.procdata as procdata
+from flask import request
 import atexit
 import threading
 import time
@@ -33,8 +34,8 @@ def create_app():
         update_thread = threading.Timer(time_sec, update_df, ())
         update_thread.start()
 
-    @app.route('/data')
-    def get_data():
+
+    def wait_for_data():
         while True:
             with current_df_lock:
                 if current_df is not None:
@@ -43,8 +44,36 @@ def create_app():
             print('Data not ready yet')
             time.sleep(1)
 
+    @app.after_request
+    def add_header(r):
+        r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        r.headers["Pragma"] = "no-cache"
+        r.headers["Expires"] = "0"
+        r.headers['Cache-Control'] = 'public, max-age=0'
+        return r
+
+    @app.route('/countries')
+    def get_countries():
+        wait_for_data()
+
         with current_df_lock:
-            return current_df.to_csv()
+            return {
+                'countries': list(current_df['country'].unique())
+            }
+
+    @app.route('/data')
+    def get_data():
+        wait_for_data()
+
+        with current_df_lock:
+            df = current_df.copy()
+
+        search_country = request.args.get('search-country').lower().strip()
+        print(f'"{search_country}"')
+        if search_country:
+            df = df[df['country'].str.lower().str.contains(search_country)]
+
+        return df.to_csv()
 
     @app.route('/')
     def main():
