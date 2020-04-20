@@ -1,6 +1,6 @@
 # corona-vis
 
-Go to [the site](vis/publish)
+Live site on [https://corona-vis-prod.herokuapp.com/](https://corona-vis-prod.herokuapp.com/)
 
 # dev
 
