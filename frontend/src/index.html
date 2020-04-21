@@ -35,14 +35,16 @@
         <div>
             Data from <a href="https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide">ECDC</a> and 
             <a href="https://www.google.com/covid19/mobility/">Google</a> <br>
-            Last update: <span id="data-when">(loading)</span>
+            Last update (ECDC): <span id="data-when-ecdc">(loading)</span> <br>
+            Last update (Google mobility): <span id="data-when-gmob">(loading)</span>
         </div>
     
         <div style="text-align: right;">
             Made by Frantisek Hajnovic <br/>
             Powered by <a href="https://dc-js.github.io/dc.js/">dc.js</a>, 
             <a href="https://flask.palletsprojects.com/en/1.1.x/quickstart/">flask</a>
-            and <a href="https://heroku.com/">heroku</a>
+            and <a href="https://heroku.com/">heroku</a> <br>
+            <a href="https://github.com/silverfield/corona-vis">GitHub</a>
         </div>
     </div>
 </header>
@@ -52,16 +54,20 @@
         <div id="loader" class="loader"></div>
     </div>
     <div id="content" style="display: none;"> 
-        <form id="controls">
-            <label for="search-country">Search country:</label>
-            <div class="autocomplete" style="width:300px;">
-                <input 
-                    type="text" 
-                    id="search-country" 
-                    placeholder="leave empty for all..."
-                >
+        <form id="controls" class="controls">
+            <div class="control">
+                <label for="search-country">Search country:</label>
+                <div class="autocomplete" style="width:300px;">
+                    <input 
+                        type="text" 
+                        id="search-country" 
+                        placeholder="leave empty for all..."
+                    >
+                </div>
             </div>
-            <input id="submit" type="submit" />
+            <div class="control">
+                <input id="submit" type="submit" />
+            </div>
         </form>
 
         <hr>
@@ -83,6 +89,12 @@
                         reset
                     </a>
                 </div>
+            </div>
+        </div>
+        <div class="evo-controls">
+            <div class="control">
+                <input type="checkbox" id="log-scale" name="log-scale">
+                <label for="log-scale">Log scale</label><br>
             </div>
         </div>
         <div class="row evolution-top-row">

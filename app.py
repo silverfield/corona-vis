@@ -61,6 +61,17 @@ def create_app():
                 'countries': list(current_df['country'].unique())
             }
 
+    @app.route('/max-dates')
+    def get_max_dates():
+        wait_for_data()
+
+        with current_df_lock:
+            pc_cols = [c for c in current_df if c.startswith('pc_')]
+            return {
+                'ecdc': current_df['date'].max(),
+                'gmob': current_df.dropna(subset=pc_cols)['date'].max()
+            }
+
     @app.route('/data')
     def get_data():
         wait_for_data()

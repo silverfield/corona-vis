@@ -103,6 +103,20 @@ h5 {
   }
 }
 
+.controls {
+  display: flex;
+
+  .control {
+    margin: 10px;
+  }
+}
+
+.evo-controls {
+  text-align: center;
+  margin-top: 30px;
+  margin-bottom: -40px;
+}
+
 /* ------------------------------------------------------------ */
 /* Footer */
 /* ------------------------------------------------------------ */
