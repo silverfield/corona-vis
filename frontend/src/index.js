@@ -197,7 +197,8 @@ function redrawAll() {
             .transitionDuration(500)
             .margins({top: 0, right: 50, bottom: 40, left: 70})
             .renderHorizontalGridLines(true)
-            .controlsUseVisibility(true);
+            .controlsUseVisibility(true)
+            ;
     });
 
     // mobility chart
@@ -241,7 +242,7 @@ function redrawAll() {
         let filteredGroup = {
             'all': function () {
                 return group.all().filter(function(d) {
-                    return d.value.total !== null;
+                    return d.value.count === 1;
                 })
             }
         };
