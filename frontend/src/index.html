@@ -62,11 +62,11 @@
             <input autocomplete="false" name="hidden" type="text" style="display:none;">
             <div class="main-controls">
                 <div>
-                    <input type="checkbox" id="compare" name="compare" checked="true">
-                    <label for="compare">Compare mode</label><br>
+                    <input class="mode-select" id="mode-world" type="button" value="World">
+                    <input class="mode-select mode-active" id="mode-compare" type="button" value="Compare countries">
                 </div>
                 
-                <div id="all-mode" class="mode-controls" style="display: none;">
+                <div id="mode-world-ctrls" class="mode-controls" style="display: none;">
                     <div class="control">
                         <label for="search-country">Search country:</label>
                         <div class="autocomplete" style="width:300px;">
@@ -80,7 +80,7 @@
                         <input id="clear-search-country" type="button" value="clear">
                     </div>
                 </div>
-                <div id="compare-mode" class="mode-controls">
+                <div id="mode-compare-ctrls" class="mode-controls">
                     <div class="control">
                         <label for="country-1">Country 1:</label>
                         <div class="autocomplete" style="width:300px;">
@@ -194,6 +194,18 @@
                 </div>    
             </div>
         </div>
+        <div id="row-stringency" class="row">
+            <div class="col-md-12">
+                <span class="chart-title">Stringency index</span>
+                <a class='reset'
+                    href='javascript:resetChart(stringencyChart);'
+                >
+                    (reset)
+                </a><br>
+                <div id='stringencyChart' class="evolution-chart">
+                </div>    
+            </div>
+        </div>
         <div id="row-google-mob-single" class="row">
             <div class="col-md-12">
                 <span class="chart-title">Google mobility (% change from baseline)</span>
@@ -202,11 +214,11 @@
                 >
                     (reset)
                 </a><br>
-                <i class="chart-note">Only one country must be selected, some countries don't have the data</i>
+                <i class="chart-note">If more than one country is selected, shows average. Some countries don't have the data</i>
                 <div id='mobilityChart' class="evolution-chart">
                 </div>    
             </div>
-        </div>
+        </div>        
     </div>
 </body>
 <footer>

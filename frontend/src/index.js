@@ -34,9 +34,18 @@ $(document).ready(function() {
         dc.redrawAll();
     });
 
-    $("#compare").change(function(e) {
-        $('#all-mode').toggle();
-        $('#compare-mode').toggle();
+    $("#mode-world").click(function(e) {
+        $('#mode-world-ctrls').show();
+        $('#mode-compare-ctrls').hide();
+        $('#mode-world').addClass('mode-active');
+        $('#mode-compare').removeClass('mode-active');
+    });
+
+    $("#mode-compare").click(function(e) {
+        $('#mode-world-ctrls').hide();
+        $('#mode-compare-ctrls').show();
+        $('#mode-compare').addClass('mode-active');
+        $('#mode-world').removeClass('mode-active');
     });
 
     jQuery.get('/countries', function(countries) {
@@ -79,6 +88,14 @@ $(document).ready(function() {
     reloadChart()
 });
 
+function getMode() {
+    if ($('#mode-compare').hasClass('mode-active')) {
+        return 'compare';
+    }
+
+    return 'world';
+}
+
 function isLogScale() {
     return $('#log-scale').is(":checked");
 }
@@ -93,7 +110,7 @@ function reloadChart() {
 
     let request = null;
 
-    if ($('#compare').is(":checked")) {
+    if (getMode() === 'compare') {
         $('#row-google-mob-single').hide();
         $('#row-by-country').hide();
         
@@ -161,11 +178,11 @@ function reloadChart() {
     }
 }
 
-function log_scale(source_group) {
+function logScale(sourceGroup) {
     return {
         all: function() {
             if (isLogScale()) {
-                return source_group.all().map(i => {
+                return sourceGroup.all().map(i => {
                     return {
                         key: i.key,
                         value: Math.log10(i.value)
@@ -173,15 +190,15 @@ function log_scale(source_group) {
                 });
             }
             
-            return source_group.all();
+            return sourceGroup.all();
         }
     }
 }
 
-function remove_empty(source_group) {
+function removeEmpty(sourceGroup) {
     return {
         all:function () {
-            let filtered = source_group.all().filter(function(i) {
+            let filtered = sourceGroup.all().filter(function(i) {
                 return i.value != 0;
             });
 
@@ -238,7 +255,15 @@ function createTotalCasesByCountryChart(cf, ) {
     return chart
 }
 
-function createEvolutionChart(cfs, meta, chartId, valSelector, colors, names) {
+function createEvolutionChart(
+    cfs, 
+    meta, 
+    chartId, 
+    reduceFunc,
+    colors, 
+    names, 
+    enableLog,
+) {
     let compositeChart = new dc.CompositeChart(`#${chartId}`);
     window[chartId] = compositeChart;
 
@@ -246,14 +271,25 @@ function createEvolutionChart(cfs, meta, chartId, valSelector, colors, names) {
         let chart = new dc.LineChart(compositeChart)
 
         let dimension = cf.dimension(d => d.date);
-        let group = dimension.group().reduceSum(valSelector);
+        let group = reduceFunc(dimension.group());
+        group = removeEmpty(group);
+        if (enableLog === true) {
+            group = logScale(group);
+        }
 
         let name = names ? names[i] : null;
 
         chart
             .dimension(dimension)
-            .group(log_scale(remove_empty(group)), name)
+            .group(group, name)
             .colors(colors[i])
+            .valueAccessor(function(p) { 
+                if (p.value.total !== undefined) {
+                    return p.value.count > 0 ? p.value.total / p.value.count : null; 
+                }
+
+                return p.value;
+            })
             ;
 
         return chart
@@ -269,12 +305,15 @@ function createEvolutionChart(cfs, meta, chartId, valSelector, colors, names) {
         .renderHorizontalGridLines(true)
         .controlsUseVisibility(true)
         .compose(charts)
-        .legend(dc.legend().x(80).y(0).itemHeight(13).gap(5))
         ;
+
+    if (names) {
+        compositeChart.legend(dc.legend().x(80).y(0).itemHeight(13).gap(5));
+    }
 
     compositeChart.yAxis()
         .tickFormat(function(l) { 
-            if (isLogScale()) {
+            if (isLogScale() && (enableLog === true)) {
                 let res = Math.pow(10, Number(l));
                 res = Math.round(res);
                 return res;
@@ -285,45 +324,53 @@ function createEvolutionChart(cfs, meta, chartId, valSelector, colors, names) {
     rotate_ticks(compositeChart, true);
 }
 
-function createGoogleMobilityChart(chart, cf, meta) {
-    function getDimGroup(accessor) {
-        function reduceAdd(p, v) {
-            if (v[accessor] !== "") {
-                ++p.count;
+
+function getAvgGroupFunctions(accessorFunc) {
+    function reduceAdd(p, v) {
+        if (accessorFunc(v) !== "") {
+            ++p.count;
+            if (p.total === null) {
+                p.total = 0;
+            }
+            p.total += Number(accessorFunc(v));
+        }
+        return p;
+    }
+    
+    function reduceRemove(p, v) {
+        if (accessorFunc(v) !== "") {
+            --p.count;
+            if (p.count === 0) {
+                p.total = null;
+            }
+            else {
                 if (p.total === null) {
                     p.total = 0;
                 }
-                p.total += Number(v[accessor]);
+                p.total -= Number(accessorFunc(v));
             }
-            return p;
         }
-        
-        function reduceRemove(p, v) {
-            if (v[accessor] !== "") {
-                --p.count;
-                if (p.count === 0) {
-                    p.total = null;
-                }
-                else {
-                    if (p.total === null) {
-                        p.total = 0;
-                    }
-                    p.total -= Number(v[accessor]);
-                }
-            }
-            return p;
-        }
-        
-        function reduceInitial() {
-            return {count: 0, total: null};
-        }
+        return p;
+    }
+    
+    function reduceInitial() {
+        return {count: 0, total: null};
+    }
 
+    return [reduceAdd, reduceRemove, reduceInitial];
+}
+
+function createGoogleMobilityChart(chart, cf, meta) {
+    function getDimGroup(accessor) {
         let dimension = cf.dimension(d => d.date);
-        let group = dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
+
+        let funcs = getAvgGroupFunctions(v => v[accessor]);
+        let group = dimension.group().reduce(...funcs);
+
         let filteredGroup = {
             'all': function () {
                 return group.all().filter(function(d) {
-                    return d.value.count === 1;
+                    return d.value.count > 0;
                 })
             }
         };
@@ -417,39 +464,58 @@ function redrawAllMode() {
         [cf],
         meta,
         'totalCasesInTimeChart',
-        d => d.tot_cases,
-        ['blue']
+        g => g.reduceSum(d => d.tot_cases),
+        ['blue'],
+        null,
+        true
     );
 
     createEvolutionChart(
         [cf], 
         meta,
         'newCasesInTimeChart',
-        d => d.cases,
-        ['blue']
+        g => g.reduceSum(d => d.cases),
+        ['blue'],
+        null,
+        true
     );
 
     createEvolutionChart(
         [cf], 
         meta,
         'totalDeathsInTimeChart',
-        d => d.tot_deaths,
-        ['red']
+        g => g.reduceSum(d => d.tot_deaths),
+        ['red'],
+        null,
+        true
     );
 
     createEvolutionChart(
         [cf], 
         meta,
         'newDeathsInTimeChart',
-        d => d.deaths,
-        ['red']
+        g => g.reduceSum(d => d.deaths),
+        ['red'],
+        null,
+        true
+    );
+
+    createEvolutionChart(
+        [cf], 
+        meta,
+        'stringencyChart',
+        g => g.reduce(...getAvgGroupFunctions(v => v.stringency)),
+        ['green'],
+        null,
+        false
     );
     
     let evolutionCharts = [
         totalCasesInTimeChart, 
         newCasesInTimeChart,
         totalDeathsInTimeChart,
-        newDeathsInTimeChart
+        newDeathsInTimeChart,
+        stringencyChart
     ];
 
     // mobility chart
@@ -512,43 +578,58 @@ function redrawCompareMode() {
         cfs,
         meta,
         'totalCasesInTimeChart',
-        d => d.tot_cases,
+        g => g.reduceSum(d => d.tot_cases),
         ['blue', 'green'],
-        Object.keys(glData)
+        Object.keys(glData),
+        true
     );
 
     createEvolutionChart(
         cfs, 
         meta,
         'newCasesInTimeChart',
-        d => d.cases,
+        g => g.reduceSum(d => d.cases),
         ['blue', 'green'],
-        Object.keys(glData)
+        Object.keys(glData),
+        true
     );
 
     createEvolutionChart(
         cfs, 
         meta,
         'totalDeathsInTimeChart',
-        d => d.tot_deaths,
+        g => g.reduceSum(d => d.tot_deaths),
         ['blue', 'green'],
-        Object.keys(glData)
+        Object.keys(glData),
+        true
     );
 
     createEvolutionChart(
         cfs, 
         meta,
         'newDeathsInTimeChart',
-        d => d.deaths,
+        g => g.reduceSum(d => d.deaths),
         ['blue', 'green'],
-        Object.keys(glData)
+        Object.keys(glData),
+        true
+    );
+
+    createEvolutionChart(
+        cfs, 
+        meta,
+        'stringencyChart',
+        g => g.reduce(...getAvgGroupFunctions(v => v.stringency)),
+        ['blue', 'green'],
+        Object.keys(glData),
+        false
     );
     
     let evolutionCharts = [
         totalCasesInTimeChart, 
         newCasesInTimeChart,
         totalDeathsInTimeChart,
-        newDeathsInTimeChart
+        newDeathsInTimeChart,
+        stringencyChart
     ];
 
     // mobility chart

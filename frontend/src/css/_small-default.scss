@@ -152,6 +152,18 @@ a.reset {
   color: red;
 }
 
+.mode-select {
+  background-color: $color-inco-strong;
+
+  &:hover {
+    background-color: $color-inco-medlight;
+  }
+
+  &.mode-active {
+    border: solid 1px white;
+  }
+}
+
 /* ------------------------------------------------------------ */
 /* Footer */
 /* ------------------------------------------------------------ */

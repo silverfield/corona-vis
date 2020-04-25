@@ -156,9 +156,14 @@ def get_stringency_df(covid_df):
 
     del df['confirmedcases']
     del df['confirmeddeaths']
+
+    df = df.rename(columns={
+        'stringencyindex': 'stringency',
+        'stringencyindexfordisplay': 'stringency_disp'
+    })
     
-    df['stringencyindex'] = df['stringencyindex']/100
-    df['stringencyindexfordisplay'] = df['stringencyindexfordisplay']/100
+    df['stringency'] = df['stringency']/100
+    df['stringency_disp'] = df['stringency_disp']/100
 
     return df
 
