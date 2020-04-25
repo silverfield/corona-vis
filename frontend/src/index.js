@@ -439,6 +439,7 @@ function createGoogleMobilityChart(chart, cf, meta) {
         .controlsUseVisibility(true)
         .legend(dc.legend().x(100).y(0).itemHeight(13).gap(5))
         .compose(composeCharts)
+        .brushOn(false)
         ;
     
     rotate_ticks(chart, true);
@@ -462,6 +463,11 @@ function legendToggle(chart) {
         .on('click.hideshow', function (d, i) {
             var subchart = chart.select('g.sub._' + i);
             var visible = subchart.style('stroke-opacity') === '1';
+            subchart.style('stroke-opacity', function() {
+                return visible ? 0.1 : 1;
+            });
+
+            var subchart = chart.select('g.sub._' + ((i + 6) % 12));
             subchart.style('stroke-opacity', function() {
                 return visible ? 0.1 : 1;
             });
