@@ -179,6 +179,10 @@ function reloadChart() {
     }
 }
 
+function avgCalc(value) {
+    return value.count > 0 ? value.total / value.count : null;
+}
+
 function logScale(sourceGroup) {
     return {
         all: function() {
@@ -200,6 +204,9 @@ function removeEmpty(sourceGroup) {
     return {
         all:function () {
             let filtered = sourceGroup.all().filter(function(i) {
+                if (i.value.count !== undefined) {
+                    return avgCalc(i.value) != null;
+                }
                 return i.value != 0;
             });
 
@@ -286,7 +293,7 @@ function createEvolutionChart(
             .colors(colors[i])
             .valueAccessor(function(p) { 
                 if (p.value.total !== undefined) {
-                    return p.value.count > 0 ? p.value.total / p.value.count : null; 
+                    return avgCalc(p.value); 
                 }
 
                 return p.value;
