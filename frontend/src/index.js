@@ -5,6 +5,7 @@ import * as dc from 'dc';
 import * as crossfilter from 'crossfilter';
 import './css/styles.scss';
 import {autocomplete} from './autocomplete'
+import { brush } from "d3";
 window.dc = dc;
 window.d3 = d3;
 
@@ -427,7 +428,7 @@ function createGoogleMobilityChart(chart, cf, meta) {
         .controlsUseVisibility(true)
         .legend(dc.legend().x(100).y(0).itemHeight(13).gap(5))
         .compose(composeCharts)
-        .brushOn(false)
+        ;
     
     rotate_ticks(chart, true);
 

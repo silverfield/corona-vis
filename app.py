@@ -69,7 +69,8 @@ def create_app():
             pc_cols = [c for c in current_df if c.startswith('pc_')]
             return {
                 'ecdc': current_df['date'].max(),
-                'gmob': current_df.dropna(subset=pc_cols)['date'].max()
+                'gmob': current_df.dropna(subset=pc_cols)['date'].max(),
+                'oxford': current_df.dropna(subset=['stringency'])['date'].max()
             }
 
     @app.route('/data')
