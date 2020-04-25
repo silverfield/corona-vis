@@ -8,6 +8,16 @@ import {autocomplete} from './autocomplete'
 window.dc = dc;
 window.d3 = d3;
 
+// -------------------------------------------------------
+// Global vars
+// -------------------------------------------------------
+
+var data = null;
+
+// -------------------------------------------------------
+// On doc. ready
+// -------------------------------------------------------
+
 $(document).ready(function() {
     jQuery.get('/countries', function(countries) {
         autocomplete(document.getElementById("search-country"), countries['countries']);
@@ -17,10 +27,6 @@ $(document).ready(function() {
         for (let k in maxDates) {
             document.getElementById(`data-when-${k}`).innerText = (new Date(maxDates[k])).toDateString();
         };
-    });
-
-    $("#log-scale").change(function(e) {
-        redrawAll();
     });
 
     $("#controls").submit(function(e) {
@@ -40,8 +46,6 @@ $(document).ready(function() {
 function isLogScale() {
     return $('#log-scale').is(":checked");
 }
-
-var data = null;
 
 function reloadChart() {
     $('#loader').show();
@@ -66,61 +70,57 @@ function reloadChart() {
     })
 }
 
-function redrawAll() {
-    if (data === null) {
-        return;
-    }
-
-    $('#loader').show();
-    $('#content').hide();
-
-    let minDate = Math.min(...data.map((d) => d.date));
-    let maxDate = Math.max(...data.map((d) => d.date));
-
-    // prep the cross filters ----------------------------------------
-
-    const cf = crossfilter(data);
-    const all = cf.groupAll();
-
-    let dimension, group;
-
-    // - picker which metric looking at
-    // - ratio new cases/deaths
-    // - smoothing
-
-    function log_scale(source_group) {
-        return {
-            all: function() {
+function log_scale(source_group) {
+    return {
+        all: function() {
+            if (isLogScale()) {
                 return source_group.all().map(i => {
                     return {
                         key: i.key,
-                        value: Math.log2(i.value)
+                        value: Math.log10(i.value)
                     }
                 });
             }
+            
+            return source_group.all();
         }
     }
+}
 
-    function remove_empty(source_group) {
-        return {
-            all:function () {
-                let filtered = source_group.all().filter(function(i) {
-                    return i.value != 0;
-                });
+function remove_empty(source_group) {
+    return {
+        all:function () {
+            let filtered = source_group.all().filter(function(i) {
+                return i.value != 0;
+            });
 
-                return filtered;
-            }
-        };
-    }
+            return filtered;
+        }
+    };
+}
 
-    // total by countries ----------------------------------------
+function rotate_ticks(chart, onlyX) {
+    chart.on('renderlet', function(_chart) {
+        let tickSelector = "g.tick text";
 
+        if (onlyX) {
+            tickSelector = "g.x text";
+        }
+
+        _chart
+            .selectAll(tickSelector)
+            .attr('transform', "rotate(-65) translate(-25 -10)");
+    });
+}
+
+function createTotalCasesByCountryChart(cf) {
     window.totalCasesByCountryChart = new dc.RowChart('#totalCasesByCountryChart');
+    let chart = window.totalCasesByCountryChart;
 
-    dimension = cf.dimension(d => d.country)
-    group = dimension.group().reduceSum(d => d.cases);
+    let dimension = cf.dimension(d => d.country)
+    let group = dimension.group().reduceSum(d => d.cases);
 
-    totalCasesByCountryChart
+    chart
         .dimension(dimension)
         .group(group)
         .cap(10)
@@ -131,80 +131,47 @@ function redrawAll() {
         .label(d => d.key)
         .title(d => d.value);
 
-    // evolution graphs ----------------------------------------
+    rotate_ticks(chart, true);
 
-    let evo_gr_transformation = function(group) {
-        let g = remove_empty(group);
+    return chart
+}
 
-        if (isLogScale()) {
-            g = log_scale(g);
-        }
+function createEvolutionChart(cf, meta, chartId, valSelector, color) {
+    let chart = new dc.LineChart(`#${chartId}`);
+    window[chartId] = chart;
 
-        return g;
-    };
+    let dimension = cf.dimension(d => d.date);
+    let group = dimension.group().reduceSum(valSelector);
 
-    window.totalCasesInTimeChart = new dc.LineChart('#totalCasesInTimeChart');
-
-    dimension = cf.dimension(d => d.date);
-    group = dimension.group().reduceSum(d => d.tot_cases)
-
-    totalCasesInTimeChart
+    chart
         .dimension(dimension)
-        .group(evo_gr_transformation(group));
+        .group(log_scale(remove_empty(group)));
 
-    window.newCasesInTimeChart = new dc.BarChart('#newCasesInTimeChart');
+    chart
+        .colors(color)
+        .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
+        .height(150)
+        .elasticX(true)
+        .elasticY(true)
+        .transitionDuration(500)
+        .margins({top: 0, right: 50, bottom: 40, left: 70})
+        .renderHorizontalGridLines(true)
+        .controlsUseVisibility(true);
+
+    chart.yAxis()
+        .tickFormat(function(l) { 
+            if (isLogScale()) {
+                let res = Math.pow(10, Number(l));
+                res = Math.round(res);
+                return res;
+            }
+            return l;
+        });
     
-    dimension = cf.dimension(d => d.date);
-    group = dimension.group().reduceSum(d => d.cases)
+    rotate_ticks(chart, true);
+}
 
-    newCasesInTimeChart
-        .dimension(dimension)
-        .group(evo_gr_transformation(group));
-
-    window.totalDeathsInTimeChart = new dc.BarChart('#totalDeathsInTimeChart');
-
-    dimension = cf.dimension(d => d.date);
-    group = dimension.group().reduceSum(d => d.tot_deaths)
-
-    totalDeathsInTimeChart
-        .dimension(dimension)
-        .group(evo_gr_transformation(group))
-        .colors(['red']);
-
-    window.newDeathsInTimeChart = new dc.BarChart('#newDeathsInTimeChart');
-
-    dimension = cf.dimension(d => d.date);
-    group = dimension.group().reduceSum(d => d.deaths)
-
-    newDeathsInTimeChart
-        .dimension(dimension)
-        .group(evo_gr_transformation(group))
-        .colors(['red']);
-
-    let evolutionCharts = [
-        totalCasesInTimeChart, 
-        newCasesInTimeChart,
-        totalDeathsInTimeChart,
-        newDeathsInTimeChart
-    ]
-
-    evolutionCharts.forEach((chart) => {
-        chart
-            .x(d3.scaleTime().domain([minDate, maxDate]))
-            .height(150)
-            .elasticX(true)
-            .elasticY(true)
-            .transitionDuration(500)
-            .margins({top: 0, right: 50, bottom: 40, left: 70})
-            .renderHorizontalGridLines(true)
-            .controlsUseVisibility(true)
-            ;
-    });
-
-    // mobility chart
-
-    window.mobilityChart = new dc.CompositeChart('#mobilityChart');
-
+function createGoogleMobilityChart(chart, cf, meta) {
     function getDimGroup(accessor) {
         function reduceAdd(p, v) {
             if (v[accessor] !== "") {
@@ -279,7 +246,7 @@ function redrawAll() {
     let composeCharts = accessors.map((o) => {
         let [dimension, group] = getDimGroup(o.accessor);
 
-        return new dc.LineChart(mobilityChart)
+        return new dc.LineChart(chart)
             .dimension(dimension)
             .colors(o.color)
             .valueAccessor(function(p) { return p.value.count > 0 ? p.value.total / p.value.count : null; })
@@ -287,8 +254,8 @@ function redrawAll() {
             .dashStyle([2,2])
     });
 
-    mobilityChart
-        .x(d3.scaleTime().domain([minDate, maxDate]))
+    chart
+        .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
         .height(300)
         .elasticX(true)
         .elasticY(true)
@@ -300,45 +267,102 @@ function redrawAll() {
         .legend(dc.legend().x(100).y(0).itemHeight(13).gap(5))
         .compose(composeCharts)
         .brushOn(false)
-
-    // rotate ticks
-
-    let allCharts = [...evolutionCharts];
-    allCharts.push(totalCasesByCountryChart);
-    allCharts.push(mobilityChart); 
-
-    allCharts.forEach((chart) => {
-        chart.renderlet(function(chart){
-            let tickSelector = "g.tick text";
-
-            if ((evolutionCharts.includes(chart)) || (chart._anchor === '#mobilityChart')) {
-                tickSelector = "g.x text";
-            }
-
-            chart
-                .selectAll(tickSelector)
-                .attr('transform', "rotate(-65) translate(-25 -10)");
-        });
-    });
     
-    window.resetAll = function() {
-        allCharts.forEach(c => resetChart(c, false))
-        dc.redrawAll();
+    rotate_ticks(chart, true);
+
+    return chart
+}
+
+
+function redrawAll() {
+    if (data === null) {
+        return;
     }
 
+    dc.chartRegistry.clear();
+
+    $('#loader').show();
+    $('#content').hide();
+
+    let meta = {
+        'minDate': Math.min(...data.map((d) => d.date)),
+        'maxDate': Math.max(...data.map((d) => d.date))
+    };
+
+    // prep the cross filters ----------------------------------------
+
+    const cf = crossfilter(data);
+
+    // total cases by country
+
+    createTotalCasesByCountryChart(cf);
+
+    // evolution graphs ----------------------------------------
+
+    createEvolutionChart(
+        cf,
+        meta,
+        'totalCasesInTimeChart',
+        d => d.tot_cases,
+        'blue'
+    );
+
+    createEvolutionChart(
+        cf, 
+        meta,
+        'newCasesInTimeChart',
+        d => d.cases,
+        'blue'
+    );
+
+    createEvolutionChart(
+        cf, 
+        meta,
+        'totalDeathsInTimeChart',
+        d => d.tot_deaths,
+        'red'
+    );
+
+    createEvolutionChart(
+        cf, 
+        meta,
+        'newDeathsInTimeChart',
+        d => d.deaths,
+        'red'
+    );
+    
+    let evolutionCharts = [
+        totalCasesInTimeChart, 
+        newCasesInTimeChart,
+        totalDeathsInTimeChart,
+        newDeathsInTimeChart
+    ];
+
+    $("#log-scale").change(function(e) {
+        dc.redrawAll();
+    });
+
+    // mobility chart
+
+    window.mobilityChart = new dc.CompositeChart('#mobilityChart');
+    createGoogleMobilityChart(window.mobilityChart, cf, meta);
+
+    // resets
+
+    let allCharts = [...evolutionCharts, totalCasesByCountryChart, mobilityChart];
+
     window.resetChart = function(chart, redraw) {
-        if (evolutionCharts.includes(chart)) {
-            chart.filterAll();
-            // chart.x(d3.scaleTime().domain([minDate, maxDate]));
-        }
-        else {
-            chart.filterAll()
-        }
+        chart.filterAll();
 
         if (redraw !== false) {
             dc.redrawAll();
         }
     };
+
+    window.resetAll = function() {
+        allCharts.forEach(c => resetChart(c, false));
+        dc.redrawAll();
+    }
     
     $('#loader').hide();
     $('#content').show();
