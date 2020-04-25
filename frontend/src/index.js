@@ -113,6 +113,7 @@ function reloadChart() {
 
     if (getMode() === 'compare') {
         $('#row-google-mob-single').hide();
+        $('#row-google-mob-all').show();
         $('#row-by-country').hide();
         
         let country1 = $('#country-1').val();
@@ -158,6 +159,7 @@ function reloadChart() {
     }
     else {
         $('#row-google-mob-single').show();
+        $('#row-google-mob-all').hide();
         $('#row-by-country').show();
 
         let searchCountry = $('#search-country').val();
@@ -368,52 +370,54 @@ function getAvgGroupFunctions(accessorFunc) {
     return [reduceAdd, reduceRemove, reduceInitial];
 }
 
+var mobilityAccessors = [
+    {
+        'accessor': 'pc_retail_and_recreation',
+        'color': 'red'
+    },
+    {
+        'accessor': 'pc_grocery_and_pharmacy',
+        'color': 'blue'
+    },
+    {
+        'accessor': 'pc_parks',
+        'color': 'orange'
+    },
+    {
+        'accessor': 'pc_transit_stations',
+        'color': 'yellow'
+    },
+    {
+        'accessor': 'pc_workplaces',
+        'color': 'green'
+    },
+    {
+        'accessor': 'pc_residential',
+        'color': 'navy'
+    },
+];
+
+function getMobilityDimGroup(cf, accessor) {
+    let dimension = cf.dimension(d => d.date);
+
+    let funcs = getAvgGroupFunctions(v => v[accessor]);
+    let group = dimension.group().reduce(...funcs);
+
+    let filteredGroup = {
+        'all': function () {
+            return group.all().filter(function(d) {
+                return d.value.count > 0;
+            })
+        }
+    };
+
+    return [dimension, filteredGroup];
+}
+
+
 function createGoogleMobilityChart(chart, cf, meta) {
-    function getDimGroup(accessor) {
-        let dimension = cf.dimension(d => d.date);
-
-        let funcs = getAvgGroupFunctions(v => v[accessor]);
-        let group = dimension.group().reduce(...funcs);
-
-        let filteredGroup = {
-            'all': function () {
-                return group.all().filter(function(d) {
-                    return d.value.count > 0;
-                })
-            }
-        };
-
-        return [dimension, filteredGroup];
-    }
-    
-    let accessors = [
-        {
-            'accessor': 'pc_retail_and_recreation',
-            'color': 'red'
-        },
-        {
-            'accessor': 'pc_grocery_and_pharmacy',
-            'color': 'blue'
-        },
-        {
-            'accessor': 'pc_parks',
-            'color': 'orange'
-        },
-        {
-            'accessor': 'pc_transit_stations',
-            'color': 'yellow'
-        },
-        {
-            'accessor': 'pc_workplaces',
-            'color': 'green'
-        },
-        {
-            'accessor': 'pc_residential',
-            'color': 'navy'
-        },
-    ];
-    let composeCharts = accessors.map((o) => {
-        let [dimension, group] = getDimGroup(o.accessor);
+    let composeCharts = mobilityAccessors.map((o) => {
+        let [dimension, group] = getMobilityDimGroup(cf, o.accessor);
 
         return new dc.LineChart(chart)
             .dimension(dimension)
@@ -440,6 +444,88 @@ function createGoogleMobilityChart(chart, cf, meta) {
     rotate_ticks(chart, true);
 
     return chart
+}
+
+function drawLegendToggles(chart) {
+    chart
+        .selectAll('g.dc-legend .dc-legend-item')
+        .style('opacity', function (d, i) {
+            var subchart = chart.select('g.sub._' + i);
+            var visible = subchart.style('stroke-opacity') === '1';
+            return visible ? 1 : 0.5;
+        });
+}
+
+function legendToggle(chart) {
+    chart
+        .selectAll('g.dc-legend .dc-legend-item')
+        .on('click.hideshow', function (d, i) {
+            var subchart = chart.select('g.sub._' + i);
+            var visible = subchart.style('stroke-opacity') === '1';
+            subchart.style('stroke-opacity', function() {
+                return visible ? 0.1 : 1;
+            });
+      
+            drawLegendToggles(chart);
+        })
+    drawLegendToggles(chart);
+}
+
+
+function createGoogleMobilityChartAll(
+    cfs, 
+    meta,
+    countries
+) {
+    window.mobilityChartAll = new dc.CompositeChart('#mobilityChartAll');
+
+    let countryCharts = cfs.map((cf, i) => {
+        let charts = mobilityAccessors.map((o) => {
+            let [dimension, group] = getMobilityDimGroup(cf, o.accessor);
+
+            let chart = new dc.LineChart(mobilityChartAll)
+                .dimension(dimension)
+                .colors(o.color)
+                .valueAccessor(function(p) { return p.value.count > 0 ? p.value.total / p.value.count : null; })
+                .group(group, `${countries[i]} - ${o.accessor}`)
+                ;
+            
+            chart.dashStyle([(i > 0 ? 2 : 10), 2]);
+
+            return chart;
+        });
+
+        return charts;
+    });
+
+
+    mobilityChartAll
+        .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
+        .height(300)
+        .elasticX(true)
+        .elasticY(true)
+        .transitionDuration(500)
+        .margins({top: 0, right: 50, bottom: 40, left: 70})
+        .yAxisPadding(70)
+        .renderHorizontalGridLines(true)
+        .controlsUseVisibility(true)
+        .legend(dc.legend().x(80).y(0).itemHeight(13).gap(3).highlightSelected(true))
+        .compose(countryCharts[0].concat(countryCharts[1]))
+        .brushOn(false)
+        ;
+
+    mobilityChartAll.on('pretransition.hideshow', legendToggle);
+    mobilityChartAll.on('postRender', () => {
+        mobilityChartAll
+            .selectAll('g.dc-legend .dc-legend-item')
+            .style('opacity', (d, i) => {
+                var subchart = mobilityChartAll.select('g.sub._' + i);
+                subchart.style('stroke-opacity', () => 0.1);
+                return 0.5;
+            });
+    });
+    
+    rotate_ticks(mobilityChartAll, true);
 }
 
 
@@ -642,12 +728,11 @@ function redrawCompareMode() {
 
     // mobility chart
 
-    // window.mobilityChart = new dc.CompositeChart('#mobilityChart');
-    // createGoogleMobilityChart(window.mobilityChart, cf, meta);
+    createGoogleMobilityChartAll(cfs, meta, Object.keys(glData));
 
     // resets
 
-    let allCharts = [...evolutionCharts];
+    let allCharts = [...evolutionCharts, mobilityChartAll];
 
     window.resetChart = function(chart, redraw) {
         chart.filterAll();
