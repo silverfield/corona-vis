@@ -12,15 +12,37 @@ window.d3 = d3;
 // Global vars
 // -------------------------------------------------------
 
-var data = null;
+var glData = null;
 
 // -------------------------------------------------------
 // On doc. ready
 // -------------------------------------------------------
 
 $(document).ready(function() {
+    let pingTimeMs = 1000*60*1;
+    
+    function pingServer() {
+        jQuery.get('/ping', function() {
+
+        });
+
+        setTimeout(pingServer, pingTimeMs);
+    }
+    // pingServer();
+
+    $("#log-scale").change(function(e) {
+        dc.redrawAll();
+    });
+
+    $("#compare").change(function(e) {
+        $('#all-mode').toggle();
+        $('#compare-mode').toggle();
+    });
+
     jQuery.get('/countries', function(countries) {
-        autocomplete(document.getElementById("search-country"), countries['countries']);
+        ['search-country', 'country-1', 'country-2'].forEach(i => {
+            autocomplete(document.getElementById(i), countries['countries']);
+        })
     });
 
     jQuery.get('/max-dates', function(maxDates) {
@@ -34,12 +56,26 @@ $(document).ready(function() {
         reloadChart();
     });
 
-    $('#search-country').keyup(function(e) {
-        if(e.which == 13) {
-            reloadChart();
-        }
+    $("#clear-search-country").click(function(e) {
+        $('#search-country').val('');
     });
 
+    $("#clear-country-1").click(function(e) {
+        $('#country-1').val('');
+    });
+
+    $("#clear-country-2").click(function(e) {
+        $('#country-2').val('');
+    });
+
+    ['#search-country'].forEach(id => {
+        $(id).keyup(function(e) {
+            if (e.which == 13) {
+                reloadChart();
+            }
+        });
+    })
+    
     reloadChart()
 });
 
@@ -47,27 +83,82 @@ function isLogScale() {
     return $('#log-scale').is(":checked");
 }
 
+function isContinent() {
+    return $('#continent').is(":checked");
+}
+
 function reloadChart() {
-    $('#loader').show();
+    $('#loader-container').show();
     $('#content').hide();
 
-    let searchCountry = $('#search-country').val();
+    let request = null;
 
-    let request = `/data?search-country=${searchCountry}`
+    if ($('#compare').is(":checked")) {
+        $('#row-google-mob-single').hide();
+        $('#row-by-country').hide();
+        
+        let country1 = $('#country-1').val();
+        let country2 = $('#country-2').val();
+        let countries = [country1, country2];
+        let requests = countries.map(c => `/one-country?country=${c}`);
 
-    d3.csv(request).then(resData => {    
-        // prep data ----------------------------------------
+        let promises = requests.map(r => d3.csv(r));
+
+        Promise.all(promises).then(function(results) {
+            let errored = results.map(r => {
+                if (r['error']) {
+                    $('#loader-container').hide();
+                    $('#content').show();
+                    $('#error-msg').text(result['error']);
+                    return true;
+                }
+
+                return false;
+            })
+
+            if (errored.some(e => e === true)) {
+                return;
+            }
+            
+            glData = {
+                [countries[0]]: results[0],
+                [countries[1]]: results[1]
+            }
+
+            const dateFormatParser = d3.timeParse('%Y-%m-%d');
+
+            countries.forEach(country => {
+                glData[country].forEach(d => {
+                    d.date = dateFormatParser(d.date);
+                });
+            });
     
-        data = resData;
+            redrawCompareMode();
+        }).catch(function(err) {
 
-        const dateFormatParser = d3.timeParse('%Y-%m-%d');
+        })
+    }
+    else {
+        $('#row-google-mob-single').show();
+        $('#row-by-country').show();
 
-        data.forEach(d => {
-            d.date = dateFormatParser(d.date);
-        });
+        let searchCountry = $('#search-country').val();
+        request = `/data?search-country=${searchCountry}`;
 
-        redrawAll();
-    })
+        d3.csv(request).then(resData => {
+            // prep data ----------------------------------------
+        
+            glData = resData;
+    
+            const dateFormatParser = d3.timeParse('%Y-%m-%d');
+    
+            glData.forEach(d => {
+                d.date = dateFormatParser(d.date);
+            });
+    
+            redrawAllMode();
+        })
+    }
 }
 
 function log_scale(source_group) {
@@ -113,16 +204,27 @@ function rotate_ticks(chart, onlyX) {
     });
 }
 
-function createTotalCasesByCountryChart(cf) {
+function createTotalCasesByCountryChart(cf, ) {
     window.totalCasesByCountryChart = new dc.RowChart('#totalCasesByCountryChart');
     let chart = window.totalCasesByCountryChart;
 
-    let dimension = cf.dimension(d => d.country)
-    let group = dimension.group().reduceSum(d => d.cases);
+    function setDimGroup() {
+        let dimension = isContinent() ? cf.dimension(d => d.continent) : cf.dimension(d => d.country);
+        let group = dimension.group().reduceSum(d => d.cases);
+
+        chart
+            .dimension(dimension)
+            .group(group)        
+    }
+    setDimGroup();
+
+    $("#continent").change(function(e) {
+        resetChart(totalCasesByCountryChart);
+        setDimGroup();
+        dc.redrawAll();
+    });
 
     chart
-        .dimension(dimension)
-        .group(group)
         .cap(10)
         .elasticX(true)
         .controlsUseVisibility(true)
@@ -136,19 +238,28 @@ function createTotalCasesByCountryChart(cf) {
     return chart
 }
 
-function createEvolutionChart(cf, meta, chartId, valSelector, color) {
-    let chart = new dc.LineChart(`#${chartId}`);
-    window[chartId] = chart;
+function createEvolutionChart(cfs, meta, chartId, valSelector, colors, names) {
+    let compositeChart = new dc.CompositeChart(`#${chartId}`);
+    window[chartId] = compositeChart;
 
-    let dimension = cf.dimension(d => d.date);
-    let group = dimension.group().reduceSum(valSelector);
+    let charts = cfs.map((cf, i) => {
+        let chart = new dc.LineChart(compositeChart)
 
-    chart
-        .dimension(dimension)
-        .group(log_scale(remove_empty(group)));
+        let dimension = cf.dimension(d => d.date);
+        let group = dimension.group().reduceSum(valSelector);
 
-    chart
-        .colors(color)
+        let name = names ? names[i] : null;
+
+        chart
+            .dimension(dimension)
+            .group(log_scale(remove_empty(group)), name)
+            .colors(colors[i])
+            ;
+
+        return chart
+    })
+
+    compositeChart
         .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
         .height(150)
         .elasticX(true)
@@ -156,9 +267,12 @@ function createEvolutionChart(cf, meta, chartId, valSelector, color) {
         .transitionDuration(500)
         .margins({top: 0, right: 50, bottom: 40, left: 70})
         .renderHorizontalGridLines(true)
-        .controlsUseVisibility(true);
+        .controlsUseVisibility(true)
+        .compose(charts)
+        .legend(dc.legend().x(80).y(0).itemHeight(13).gap(5))
+        ;
 
-    chart.yAxis()
+    compositeChart.yAxis()
         .tickFormat(function(l) { 
             if (isLogScale()) {
                 let res = Math.pow(10, Number(l));
@@ -168,7 +282,7 @@ function createEvolutionChart(cf, meta, chartId, valSelector, color) {
             return l;
         });
     
-    rotate_ticks(chart, true);
+    rotate_ticks(compositeChart, true);
 }
 
 function createGoogleMobilityChart(chart, cf, meta) {
@@ -274,24 +388,24 @@ function createGoogleMobilityChart(chart, cf, meta) {
 }
 
 
-function redrawAll() {
-    if (data === null) {
+function redrawAllMode() {
+    if (glData === null) {
         return;
     }
 
     dc.chartRegistry.clear();
 
-    $('#loader').show();
+    $('#loader-container').show();
     $('#content').hide();
 
     let meta = {
-        'minDate': Math.min(...data.map((d) => d.date)),
-        'maxDate': Math.max(...data.map((d) => d.date))
+        'minDate': Math.min(...glData.map((d) => d.date)),
+        'maxDate': Math.max(...glData.map((d) => d.date))
     };
 
     // prep the cross filters ----------------------------------------
 
-    const cf = crossfilter(data);
+    const cf = crossfilter(glData);
 
     // total cases by country
 
@@ -300,35 +414,35 @@ function redrawAll() {
     // evolution graphs ----------------------------------------
 
     createEvolutionChart(
-        cf,
+        [cf],
         meta,
         'totalCasesInTimeChart',
         d => d.tot_cases,
-        'blue'
+        ['blue']
     );
 
     createEvolutionChart(
-        cf, 
+        [cf], 
         meta,
         'newCasesInTimeChart',
         d => d.cases,
-        'blue'
+        ['blue']
     );
 
     createEvolutionChart(
-        cf, 
+        [cf], 
         meta,
         'totalDeathsInTimeChart',
         d => d.tot_deaths,
-        'red'
+        ['red']
     );
 
     createEvolutionChart(
-        cf, 
+        [cf], 
         meta,
         'newDeathsInTimeChart',
         d => d.deaths,
-        'red'
+        ['red']
     );
     
     let evolutionCharts = [
@@ -337,10 +451,6 @@ function redrawAll() {
         totalDeathsInTimeChart,
         newDeathsInTimeChart
     ];
-
-    $("#log-scale").change(function(e) {
-        dc.redrawAll();
-    });
 
     // mobility chart
 
@@ -364,7 +474,106 @@ function redrawAll() {
         dc.redrawAll();
     }
     
-    $('#loader').hide();
+    $('#loader-container').hide();
+    $('#content').show();
+    dc.renderAll();
+}
+
+
+function redrawCompareMode() {
+    if (glData === null) {
+        return;
+    }
+
+    dc.chartRegistry.clear();
+
+    $('#loader-container').show();
+    $('#content').hide();
+
+    let metas = Object.keys(glData).map(c => {
+        return {
+            'minDate': Math.min(...glData[c].map((d) => d.date)),
+            'maxDate': Math.max(...glData[c].map((d) => d.date))
+        }
+    });
+
+    let meta = {
+        'minDate': Math.min(...Object.keys(metas).map(m => m['minDate'])),
+        'maxDate': Math.max(...Object.keys(metas).map(m => m['maxDate']))
+    }
+
+    // prep the cross filters ----------------------------------------
+
+    const cfs = Object.keys(glData).map(c => crossfilter(glData[c]));
+
+    // evolution graphs ----------------------------------------
+
+    createEvolutionChart(
+        cfs,
+        meta,
+        'totalCasesInTimeChart',
+        d => d.tot_cases,
+        ['blue', 'green'],
+        Object.keys(glData)
+    );
+
+    createEvolutionChart(
+        cfs, 
+        meta,
+        'newCasesInTimeChart',
+        d => d.cases,
+        ['blue', 'green'],
+        Object.keys(glData)
+    );
+
+    createEvolutionChart(
+        cfs, 
+        meta,
+        'totalDeathsInTimeChart',
+        d => d.tot_deaths,
+        ['blue', 'green'],
+        Object.keys(glData)
+    );
+
+    createEvolutionChart(
+        cfs, 
+        meta,
+        'newDeathsInTimeChart',
+        d => d.deaths,
+        ['blue', 'green'],
+        Object.keys(glData)
+    );
+    
+    let evolutionCharts = [
+        totalCasesInTimeChart, 
+        newCasesInTimeChart,
+        totalDeathsInTimeChart,
+        newDeathsInTimeChart
+    ];
+
+    // mobility chart
+
+    // window.mobilityChart = new dc.CompositeChart('#mobilityChart');
+    // createGoogleMobilityChart(window.mobilityChart, cf, meta);
+
+    // resets
+
+    let allCharts = [...evolutionCharts];
+
+    window.resetChart = function(chart, redraw) {
+        chart.filterAll();
+
+        if (redraw !== false) {
+            dc.redrawAll();
+        }
+    };
+
+    window.resetAll = function() {
+        allCharts.forEach(c => resetChart(c, false));
+        dc.redrawAll();
+    }
+    
+    $('#loader-container').hide();
     $('#content').show();
     dc.renderAll();
 }

@@ -61,6 +61,11 @@ header {
     display: flex;
     justify-content: center;
     margin-top: 30px;
+
+    .center-container {
+      display: flex;
+      justify-content: center; 
+    }
 }
   
 a {
@@ -69,12 +74,12 @@ a {
     text-shadow: 0 0 3px white;
 }
 
-h5 {
+chart-title {
     font-size: 1em;
 }
 
 .dc-chart {
-    margin-top: -15px;
+    margin-top: 0px;
     text-align: right;
 }
 
@@ -94,6 +99,10 @@ h5 {
     text-align: center;
 }
 
+a.reset {
+  margin-left: 10px;
+}
+
 .flex-container {
   display: flex;
   flex-wrap: wrap;
@@ -109,16 +118,38 @@ h5 {
 
 .controls {
   display: flex;
+  padding: 10px;
 
   .control {
     margin: 10px;
+  }
+
+  .main-controls {
+    flex-grow: 1;
+  }
+
+  .submit {
+    
   }
 }
 
 .evo-controls {
   text-align: center;
-  margin-top: 30px;
+  margin-top: 0px;
   margin-bottom: -40px;
+}
+
+.loc-controls {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+
+.error-msg {
+  text-align: center;
+  margin: 20px;
+  font-size: 1.3em;
+  color: red;
 }
 
 /* ------------------------------------------------------------ */

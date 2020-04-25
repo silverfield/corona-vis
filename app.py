@@ -80,15 +80,36 @@ def create_app():
             df = current_df.copy()
 
         search_country = request.args.get('search-country').lower().strip()
-        print(f'"{search_country}"')
         if search_country:
             df = df[df['country'].str.lower().str.contains(search_country)]
 
         return df.to_csv()
 
+    @app.route('/one-country')
+    def get_compare():
+        wait_for_data()
+
+        with current_df_lock:
+            df = current_df.copy()
+
+        res = {}
+
+        country = request.args.get('country').strip()
+        if country not in df['country'].unique():
+            return {
+                'error': f'Country {country} not found'
+            }
+        d = df[df['country'] == country]
+
+        return d.to_csv()
+
     @app.route('/')
     def main():
         return render_template('index.html')
+
+    @app.route('/ping')
+    def ping():
+        return {'ping': 'ok'}
 
     schedule_next_update(0)
     return app

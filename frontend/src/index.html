@@ -29,7 +29,7 @@
 <script src="{{ url_for('static', filename='main_bundle.js') }}"></script>
 
 <header>
-    <h1>Covid-19 visualisation</h1>
+    <h1 style="text-align: center;">Covid-19 visualisation</h1>
 
     <div class="flex-container">
         <div>
@@ -49,27 +49,73 @@
 </header>
 
 <body>
-    <div class="loader-container">
-        <div id="loader" class="loader"></div>
+    <div id="loader-container" class="loader-container">
+        <div>
+            <b>Loading the data, this may take a few seconds...</b>
+            <div class="center-container">
+                <div id="loader" class="loader"></div>
+            </div>
+        </div>
     </div>
     <div id="content" style="display: none;"> 
-        <form id="controls" class="controls">
-            <div class="control">
-                <label for="search-country">Search country:</label>
-                <div class="autocomplete" style="width:300px;">
-                    <input 
-                        type="text" 
-                        id="search-country" 
-                        placeholder="leave empty for all..."
-                    >
+        <form id="controls" class="controls" autocomplete="false">
+            <input autocomplete="false" name="hidden" type="text" style="display:none;">
+            <div class="main-controls">
+                <div>
+                    <input type="checkbox" id="compare" name="compare" checked="true">
+                    <label for="compare">Compare mode</label><br>
+                </div>
+                
+                <div id="all-mode" class="mode-controls" style="display: none;">
+                    <div class="control">
+                        <label for="search-country">Search country:</label>
+                        <div class="autocomplete" style="width:300px;">
+                            <input 
+                                type="text" 
+                                id="search-country" 
+                                placeholder="leave empty for all..."
+                                autocomplete="off"
+                            >
+                        </div>
+                        <input id="clear-search-country" type="button" value="clear">
+                    </div>
+                </div>
+                <div id="compare-mode" class="mode-controls">
+                    <div class="control">
+                        <label for="country-1">Country 1:</label>
+                        <div class="autocomplete" style="width:300px;">
+                            <input 
+                                type="text" 
+                                id="country-1" 
+                                value="United Kingdom"
+                                autocomplete="off"
+                            >
+                        </div>
+                        <input id="clear-country-1" type="button" value="clear">
+                    </div>
+                    <div class="control">
+                        <label for="country-2">Country 2:</label>
+                        <div class="autocomplete" style="width:300px;">
+                            <input 
+                                type="text" 
+                                id="country-2" 
+                                value="Germany"
+                                autocomplete="off"
+                            >
+                        </div>
+                        <input id="clear-country-2" type="button" value="clear">
+                    </div>
                 </div>
             </div>
-            <div class="control">
+            
+            <div class="submit">
                 <input id="submit" type="submit" />
             </div>
         </form>
 
         <hr>
+
+        <div id='error-msg'></div>
 
         <div class="reset-all-div">
             <a class='reset-all' href='javascript:resetAll();'>
@@ -77,16 +123,22 @@
             </a>
         </div>
 
-        <div class="row">
+        <div id="row-by-country" class="row">
             <div class="col-md-12">
-                <h5>Total cases by country (top 10)</h5>
+                <div class="loc-controls">
+                    <div class="control">
+                        <input type="checkbox" id="continent" name="continent">
+                        <label for="continent">Continents</label><br>
+                    </div>
+                </div>
+                <span class="chart-title">Total cases by country/continent (top 10)</span>
+                <a class='reset'
+                    href='javascript:resetChart(totalCasesByCountryChart);'
+                >
+                    (reset)
+                </a>
                 <div id='totalCasesByCountryChart' class="country-bar">
-                    <a class='reset'
-                        href='javascript:resetChart(totalCasesByCountryChart);'
-                        style='visibility: hidden;'
-                    >
-                        reset
-                    </a>
+                    
                 </div>
             </div>
         </div>
@@ -98,63 +150,60 @@
         </div>
         <div class="row evolution-top-row">
             <div class="col-md-6">
-                <h5>Total cases in time</h5>
+                <span class="chart-title">Total cases in time</span>
+                <a class='reset'
+                    href='javascript:resetChart(totalCasesInTimeChart);'
+                >
+                    (reset)
+                </a>
+
                 <div id='totalCasesInTimeChart' class="evolution-chart">
-                    <a class='reset'
-                        href='javascript:resetChart(totalCasesInTimeChart);'
-                        style='visibility: hidden;'
-                    >
-                        reset
-                    </a>
                 </div>
             </div>
             <div class="col-md-6">
-                <h5>New cases in time</h5>
+                <span class="chart-title">New cases in time</span>
+                <a class='reset'
+                    href='javascript:resetChart(newCasesInTimeChart);'
+                >
+                    (reset)
+                </a>
                 <div id='newCasesInTimeChart' class="evolution-chart">
-                    <a class='reset'
-                        href='javascript:resetChart(newCasesInTimeChart);'
-                        style='visibility: hidden;'
-                    >
-                        reset
-                    </a>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-6">
-                <h5>Total deaths in time</h5>
+                <span class="chart-title">Total deaths in time</span>
+                <a class='reset'
+                    href='javascript:resetChart(totalDeathsInTimeChart);'
+                >
+                    (reset)
+                </a>
+
                 <div id='totalDeathsInTimeChart' class="evolution-chart">
-                    <a class='reset'
-                        href='javascript:resetChart(totalDeathsInTimeChart);'
-                        style='visibility: hidden;'
-                    >
-                        reset
-                    </a>
                 </div>
             </div>
             <div class="col-md-6">
-                <h5>New deaths in time</h5>
+                <span class="chart-title">New deaths in time</span>
+                <a class='reset'
+                    href='javascript:resetChart(newDeathsInTimeChart);'
+                >
+                    (reset)
+                </a>
                 <div id='newDeathsInTimeChart' class="evolution-chart">
-                    <a class='reset'
-                        href='javascript:resetChart(newDeathsInTimeChart);'
-                        style='visibility: hidden;'
-                    >
-                        reset
-                    </a>
                 </div>    
             </div>
         </div>
-        <div class="row">
+        <div id="row-google-mob-single" class="row">
             <div class="col-md-12">
-                <h5>Google mobility (% change from baseline)</h5>
-                <i class="chart-note">Only one country must be selected</i>
+                <span class="chart-title">Google mobility (% change from baseline)</span>
+                <a class='reset'
+                    href='javascript:resetChart(mobilityChart);'
+                >
+                    (reset)
+                </a><br>
+                <i class="chart-note">Only one country must be selected, some countries don't have the data</i>
                 <div id='mobilityChart' class="evolution-chart">
-                    <a class='reset'
-                        href='javascript:resetChart(mobilityChart);'
-                        style='visibility: hidden;'
-                    >
-                        reset
-                    </a>
                 </div>    
             </div>
         </div>

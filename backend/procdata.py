@@ -5,6 +5,52 @@ from backend.common import *
 DATA_PATH = f'{get_root()}/data/world.xlsx'
 
 
+def consolidate_country_col(df, country_col, country_id_col, covid_df):
+    """
+    This method adjusts the values in the country field of the passed DF
+    so that the values are matching those in the covid_DF whenever possible,
+    so that we can subsequently join them on the country field.    
+    """ 
+    
+    covid_countries = covid_df[['country_id', 'country']].drop_duplicates()
+    covid_countries['country_lower'] = covid_countries['country'].str.lower()
+    covid_countries['country_id_lower'] = covid_countries['country_id'].str.lower()
+    
+    df = df.rename(columns={
+        country_col: 'country_other',
+        country_id_col: 'country_id_other',
+    })
+    df['country_other_lower'] = df['country_other'].str.lower()
+    df['country_id_other_lower'] = df['country_id_other'].str.lower()
+    
+    
+    def _take_first_non_null_col(_df, _cols):
+        return _df[_cols].fillna(method='bfill', axis=1).iloc[:, 0]
+    
+    def _consolidate_on(_df, col):
+        _join_df = covid_countries.set_index(f'{col}_lower')
+        _df = _df.join(_join_df, on=f'{col}_other_lower')
+        _df['country_other'] = _take_first_non_null_col(_df, ['country', 'country_other'])
+        for c in _join_df.columns:
+            del _df[c]
+            
+        return _df
+            
+    df = _consolidate_on(df, 'country_id')
+    df = _consolidate_on(df, 'country')
+    
+    df = df[df['country_other'].isin(covid_countries['country'])]
+    
+    del df['country_id_other']
+    del df['country_other_lower']
+    del df['country_id_other_lower']
+    df = df.rename(columns={
+        'country_other': 'country'
+    })
+    
+    return df    
+
+
 def get_google_mobility_df(covid_df):
     url = 'https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv'
     
@@ -13,20 +59,11 @@ def get_google_mobility_df(covid_df):
 
     df = pd.read_csv(url, dtype=dtypes)
 
-    covid_countries = covid_df[['country_id', 'country']].drop_duplicates()
+    df = consolidate_country_col(df, 'country_region', 'country_region_code', covid_df)
 
-    # we use country as written in Covid dataset whenever possible - the rest we drop
-    df = df.join(covid_countries.set_index('country_id'), on='country_region_code')
-    df['country_region'] = df[['country', 'country_region']].fillna(method='bfill', axis=1).iloc[:, 0]
-    df = df[df['country_region'].isin(covid_countries['country'])]
-
-    del df['country']
-    del df['country_region_code']
     df = df[pd.isna(df['sub_region_1'])]
     del df['sub_region_1']
     del df['sub_region_2']
-
-    df = df.rename(columns={'country_region': 'country'})
 
     to_rep = '_percent_change_from_baseline'
     for col in df.columns:
@@ -47,7 +84,8 @@ def get_covid_df():
         'dateRep': 'date',
         'countriesAndTerritories': 'country',
         'popData2018': 'population',
-        'geoId': 'country_id'
+        'geoId': 'country_id',
+        'continentExp': 'continent'
     })
     del df['countryterritoryCode']
 
@@ -82,11 +120,58 @@ def get_covid_df():
     return df
 
 
+def get_stringency_df(covid_df):
+    df = pd.read_csv('https://ocgptweb.azurewebsites.net/CSVDownload/?type=Compressed')
+
+    df = consolidate_country_col(df, 'CountryName', 'CountryCode', covid_df)
+
+    df['Date'] = df['Date'].astype('str').apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:]}')
+
+    del df['Unnamed: 26']
+
+    df.columns = [c.lower() for c in df.columns]
+
+    for i in range(1, 14):
+        scols = [c for c in df.columns if f's{i}_' in c]
+        
+        if len(scols) == 2:
+            scol = [c for c in scols if 'isgen' not in c][0]
+        else:
+            scol = scols[0]
+            
+        scol_name = '_'.join(scol.split('_')[1].split(' '))
+        
+        if len(scols) == 2:
+            isgencol = [c for c in scols if 'isgen' in c][0]
+            new_isgencol = f'metric_{i}_{scol_name}_isgen'
+            df = df.rename(columns={
+                isgencol: new_isgencol
+            })
+        
+        new_scol = f'metric_{i}_{scol_name}'
+            
+        df = df.rename(columns={
+            scol: new_scol
+        })
+
+    del df['confirmedcases']
+    del df['confirmeddeaths']
+    
+    df['stringencyindex'] = df['stringencyindex']/100
+    df['stringencyindexfordisplay'] = df['stringencyindexfordisplay']/100
+
+    return df
+
+
 def get_final_df():
     covid_df = get_covid_df()
 
-    gm_df = get_google_mobility_df(covid_df)
+    df = covid_df
 
-    df = covid_df.join(gm_df.set_index(['country', 'date']), on=['country', 'date'])
+    gm_df = get_google_mobility_df(covid_df)
+    df = df.join(gm_df.set_index(['country', 'date']), on=['country', 'date'])
+
+    str_df = get_stringency_df(covid_df)
+    df = df.join(str_df.set_index(['country', 'date']), on=['country', 'date'])
 
     return df
