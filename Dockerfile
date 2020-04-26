@@ -1,6 +1,6 @@
 # build frontend
 
-FROM ubuntu:19.10 AS frontend_build
+FROM ubuntu:19.10 AS frontend
 WORKDIR /src
 
 RUN apt-get update && apt-get -y install curl
@@ -31,7 +31,7 @@ RUN pip3 install -r requirements.txt
 
 COPY ./ ./
 
-COPY --from=frontend_build /src/ ./from_frontend
+COPY --from=frontend /src/ ./from_frontend
 RUN cp -r from_frontend/* ./
 RUN rm -rf from_frontend
 RUN ls -al .
@@ -39,7 +39,7 @@ RUN ls -al .
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 
-EXPOSE 8080
+EXPOSE 5000
 
 ENTRYPOINT [ "flask" ]
 CMD [ "run", "--port", "5000", "--host", "0.0.0.0" ]

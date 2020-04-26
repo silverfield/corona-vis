@@ -23,3 +23,9 @@ One off:
 * `git push heroku master`
 
 https://realpython.com/flask-by-example-part-1-project-setup/ 
+
+
+Docker
+
+* `docker image build --target frontend -t corona-frontend .`
+* `docker image build --target main -t corona-main .`
