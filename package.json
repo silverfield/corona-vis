@@ -25,6 +25,7 @@
   "author": "Frantisek Hajnovic",
   "license": "ISC",
   "dependencies": {
+    "babel-preset-react": "^6.24.1",
     "crossfilter": "^1.3.12",
     "d3": "^5.15.1",
     "dc": "^4.0.3",

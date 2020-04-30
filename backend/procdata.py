@@ -121,46 +121,42 @@ def get_covid_df():
 
 
 def get_stringency_df(covid_df):
-    df = pd.read_csv('https://ocgptweb.azurewebsites.net/CSVDownload/?type=Compressed')
+    df = pd.read_csv('https://oxcgrtportal.azurewebsites.net/api/CSVDownload')
 
     df = consolidate_country_col(df, 'CountryName', 'CountryCode', covid_df)
 
     df['Date'] = df['Date'].astype('str').apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:]}')
 
-    del df['Unnamed: 26']
+    for c in [
+        'LegacyStringencyIndex',
+        'LegacyStringencyIndexForDisplay',
+        'ConfirmedCases',
+        'ConfirmedDeaths'
+    ]:
+        del df[c]
+        
+    df = df.rename(columns={
+        'StringencyIndex': 'stringency',
+        'StringencyIndexForDisplay': 'stringency_disp'
+    })
 
     df.columns = [c.lower() for c in df.columns]
 
-    for i in range(1, 14):
-        scols = [c for c in df.columns if f's{i}_' in c]
-        
-        if len(scols) == 2:
-            scol = [c for c in scols if 'isgen' not in c][0]
-        else:
-            scol = scols[0]
+    for letter in ['c', 'e', 'h', 'm']:
+        for i in range(1, 100):
+            cols = [c for c in df.columns if f'{letter}{i}_' in c]
+            if len(cols) == 0:
+                continue
+                
+            name = '_'.join(cols[0].split('_')[1].split(' '))
+            name_flag = f'{name}_flag'
+            name_notes = f'{name}_note'
             
-        scol_name = '_'.join(scol.split('_')[1].split(' '))
-        
-        if len(scols) == 2:
-            isgencol = [c for c in scols if 'isgen' in c][0]
-            new_isgencol = f'metric_{i}_{scol_name}_isgen'
+            new_names = [f'mtr_{letter}_{c}' for c in [name, name_flag, name_notes]]
+            
             df = df.rename(columns={
-                isgencol: new_isgencol
+                cols[i]: new_names[i] for i in range(len(cols))
             })
-        
-        new_scol = f'metric_{i}_{scol_name}'
-            
-        df = df.rename(columns={
-            scol: new_scol
-        })
-
-    del df['confirmedcases']
-    del df['confirmeddeaths']
-
-    df = df.rename(columns={
-        'stringencyindex': 'stringency',
-        'stringencyindexfordisplay': 'stringency_disp'
-    })
     
     df['stringency'] = df['stringency']/100
     df['stringency_disp'] = df['stringency_disp']/100

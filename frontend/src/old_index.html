@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <title>Coronavirus - vis</title>
+
+    <meta name="author" content="Fero Hajnovic" />
+
+    <link rel="shortcut icon" href="">
+
+
+    <link href='https://fonts.googleapis.com/css?family=Didact Gothic' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dc/3.2.1/dc.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</head>
+
+<script src="{{ url_for('static', filename='main_bundle.js') }}"></script>
+
+<header>
+    <h1 style="text-align: center;">Covid-19 visualisation</h1>
+
+    <div class="flex-container">
+        <div>
+            Data from: <br>
+            <a href="https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide">ECDC</a> - updated: <span id="data-when-ecdc">(loading)</span> <br>
+            <a href="https://www.google.com/covid19/mobility/">Google</a> - updated: <span id="data-when-gmob">(loading)</span><br>
+            <a href="https://www.bsg.ox.ac.uk/research/research-projects/coronavirus-government-response-tracker">Oxford university</a> - updated: <span id="data-when-oxford">(loading)</span>
+        </div>
+    
+        <div style="text-align: right;">
+            Made by Frantisek Hajnovic <br/>
+            Powered by <a href="https://dc-js.github.io/dc.js/">dc.js</a>, 
+            <a href="https://flask.palletsprojects.com/en/1.1.x/quickstart/">flask</a>
+            and <a href="https://heroku.com/">heroku</a> <br>
+            Check out the code on <a href="https://github.com/silverfield/corona-vis">GitHub</a>
+        </div>
+    </div>
+</header>
+
+<body>
+    <div id="loader-container" class="loader-container">
+        <div>
+            <b>Loading the data, this may take a few seconds...</b>
+            <div class="center-container">
+                <div id="loader" class="loader"></div>
+            </div>
+        </div>
+    </div>
+    <div id="content" style="display: none;"> 
+        <form id="controls" class="controls" autocomplete="false">
+            <input autocomplete="false" name="hidden" type="text" style="display:none;">
+            <div class="main-controls">
+                <div>
+                    <input class="mode-select mode-active" id="mode-world" type="button" value="World">
+                    <input class="mode-select" id="mode-compare" type="button" value="Compare countries">
+                </div>
+                
+                <div id="mode-world-ctrls" class="mode-controls">
+                    <div class="control">
+                        <label for="search-country">Search country:</label>
+                        <div class="autocomplete" style="width:300px;">
+                            <input 
+                                type="text" 
+                                id="search-country" 
+                                placeholder="leave empty for all..."
+                                autocomplete="off"
+                            >
+                        </div>
+                        <input id="clear-search-country" type="button" value="clear">
+                    </div>
+                </div>
+                <div id="mode-compare-ctrls" class="mode-controls" style="display: none;">
+                    <div class="control">
+                        <label for="country-1">Country 1:</label>
+                        <div class="autocomplete" style="width:300px;">
+                            <input 
+                                type="text" 
+                                id="country-1" 
+                                value="United Kingdom"
+                                autocomplete="off"
+                            >
+                        </div>
+                        <input id="clear-country-1" type="button" value="clear">
+                    </div>
+                    <div class="control">
+                        <label for="country-2">Country 2:</label>
+                        <div class="autocomplete" style="width:300px;">
+                            <input 
+                                type="text" 
+                                id="country-2" 
+                                value="Germany"
+                                autocomplete="off"
+                            >
+                        </div>
+                        <input id="clear-country-2" type="button" value="clear">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="submit">
+                <input id="submit" type="submit" />
+            </div>
+        </form>
+
+        <hr>
+
+        <div id='error-msg'></div>
+
+        <div class="reset-all-div">
+            <a class='reset-all' href='javascript:resetAll();'>
+                Reset all charts
+            </a>
+        </div>
+
+        <div id="row-by-country" class="row">
+            <div class="col-md-12">
+                <div class="loc-controls">
+                    <div class="control">
+                        <input type="checkbox" id="continent" name="continent">
+                        <label for="continent">Continents</label><br>
+                    </div>
+                </div>
+                <span class="chart-title">Total cases by country/continent (top 10)</span>
+                <a class='reset'
+                    href='javascript:resetChart(totalCasesByCountryChart);'
+                >
+                    (reset)
+                </a>
+                <div id='totalCasesByCountryChart' class="country-bar">
+                    
+                </div>
+            </div>
+        </div>
+        <div class="evo-controls">
+            <div class="control">
+                <input type="checkbox" id="log-scale" name="log-scale">
+                <label for="log-scale">Log scale (base 10)</label><br>
+            </div>
+        </div>
+        <div class="row evolution-top-row">
+            <div class="col-md-6">
+                <span class="chart-title">Total cases in time</span>
+                <a class='reset'
+                    href='javascript:resetChart(totalCasesInTimeChart);'
+                >
+                    (reset)
+                </a>
+
+                <div id='totalCasesInTimeChart' class="evolution-chart">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <span class="chart-title">New cases in time</span>
+                <a class='reset'
+                    href='javascript:resetChart(newCasesInTimeChart);'
+                >
+                    (reset)
+                </a>
+                <div id='newCasesInTimeChart' class="evolution-chart">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <span class="chart-title">Total deaths in time</span>
+                <a class='reset'
+                    href='javascript:resetChart(totalDeathsInTimeChart);'
+                >
+                    (reset)
+                </a>
+
+                <div id='totalDeathsInTimeChart' class="evolution-chart">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <span class="chart-title">New deaths in time</span>
+                <a class='reset'
+                    href='javascript:resetChart(newDeathsInTimeChart);'
+                >
+                    (reset)
+                </a>
+                <div id='newDeathsInTimeChart' class="evolution-chart">
+                </div>    
+            </div>
+        </div>
+        <div id="row-stringency" class="row">
+            <div class="col-md-12">
+                <span class="chart-title">Stringency index</span>
+                <a class='reset'
+                    href='javascript:resetChart(stringencyChart);'
+                >
+                    (reset)
+                </a><br>
+                <div id='stringencyChart' class="evolution-chart">
+                </div>    
+            </div>
+        </div>
+        <div id="row-google-mob-single" class="row">
+            <div class="col-md-12">
+                <span class="chart-title">Google mobility (% change from baseline)</span>
+                <a class='reset'
+                    href='javascript:resetChart(mobilityChart);'
+                >
+                    (reset)
+                </a><br>
+                <i class="chart-note">If more than one country is selected, shows average. Some countries don't have the data</i>
+                <div id='mobilityChart' class="evolution-chart">
+                </div>    
+            </div>
+        </div>
+        <div id="row-google-mob-all" class="row">
+            <div class="col-md-12">
+                <span class="chart-title">Google mobility (% change from baseline)</span>
+                <a class='reset'
+                    href='javascript:resetChart(mobilityChartAll);'
+                >
+                    (reset)
+                </a><br>
+                <i class="chart-note">Some countries don't have the data</i>
+                <div id='mobilityChartAll' class="evolution-chart">
+                </div>    
+            </div>
+        </div>
+        <div id="google-mob-all-legend">
+
+        </div>
+    </div>
+</body>
+<footer>
+    design &amp; development by Frantisek Hajnovic<br/>
+    copyright © 2020<br/>
+</footer>
+</html>
+
