@@ -1,3 +1,4 @@
+import {resetChart} from '../helpers/chartHelper'
 import {createContext, useState, useContext} from "react"
 import * as d3 from "d3";
 import * as dc from "dc";
@@ -16,10 +17,7 @@ export function DataProvider({
     const [cf, setCf] = useState(null);
 
     function addChart(chart) {
-        let newCharts = charts.slice();
-        newCharts.push(chart);
-
-        setCharts(newCharts);
+        setCharts(prevCharts => [...prevCharts, chart]);
     };
 
     function resetAllCharts() {

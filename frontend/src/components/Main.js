@@ -4,14 +4,20 @@ import {
     Route,
 } from "react-router-dom";
 
+import {useEffect} from "react"
 import { DataProvider, useData } from '../contexts/DataProvider'
-import { ChartProvider, useCharts } from '../contexts/ChartProvider'
 import World from './mains/World'
 import Compare from './mains/Compare'
 
 function Content({
 
 }) {
+    const {loadWorld} = useData();
+
+    useEffect(() => {
+        loadWorld('');
+    }, []);
+
     return <Router>
         <Switch>
             <Route path="/" exact component={() => { 
@@ -29,28 +35,13 @@ function Content({
     </Router>
 }
 
-function ResetAllCharts({
-
-}) {
-    const {resetAllCharts} = useCharts();
-
-    return <div className="reset-all-div">
-        <a className='reset-all' onClick={resetAllCharts}>
-            Reset all charts
-        </a>
-    </div>
-}
-
 export default function Main({
 
 }) {
     return (
         <>
             <DataProvider>
-            <ChartProvider>
-                <ResetAllCharts/>
                 <Content/>
-            </ChartProvider>
             </DataProvider>
         </>
     );

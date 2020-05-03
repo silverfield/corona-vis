@@ -1,4 +1,4 @@
-import DataProvider, { useData } from './../contexts/DataProvider'
+import { useData } from './../contexts/DataProvider'
 
 export function Loader({
 

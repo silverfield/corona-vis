@@ -3,7 +3,7 @@ import * as dc from 'dc';
 
 import {useEffect, useState} from "react"
 import {useData} from '../../contexts/DataProvider'
-import {resetChart, rotateTicks} from '../../helpers/chartHelper'
+import {ResetButton, resetChart, rotateTicks} from '../../helpers/chartHelper'
 
 function setDimGroup(chart, cf, isContinent) {
     let dimension = isContinent ? cf.dimension(d => d.continent) : cf.dimension(d => d.country);
@@ -36,13 +36,14 @@ function createChart(cf, isContinent) {
 export function CountryChart({
 
 }) {
-    const {cf} = useData();
-    // const [isContinent, setIsContinent] = useState(false);
-    var chart = null;
+    const {cf, addChart} = useData();
+    const [chart, setChart] = useState(null);
 
     useEffect(() => {
-        chart = createChart(cf, false);
-    });
+        let newChart = createChart(cf, false);
+        setChart(newChart);
+        addChart(newChart);
+    }, []);
 
     function changeContinent(newIsContinent) {
         resetChart(chart);
@@ -50,28 +51,19 @@ export function CountryChart({
         dc.redrawAll();
     };
 
-    return <div id="row-by-country" className="row">
-        <div className="col-md-12">
-            <div className="loc-controls">
-                <div className="control">
-                    <input 
-                        type="checkbox" 
-                        id="continent" 
-                        name="continent" 
-                        onChange={(e) => changeContinent(e.target.checked)}/>
-                    <label htmlFor="continent">Continents</label>
-                </div>
-            </div>
-            <span className="chart-title">Total cases by country/continent (top 10)</span>
-            <a 
-                className='reset'
-                onClick={() => resetChart(chart, true)}
-            >
-                (reset)
-            </a>
-            <div id='totalCasesByCountryChart' className="country-bar">
-                
+    return <>
+        <div className="loc-controls">
+            <div className="control">
+                <input 
+                    type="checkbox" 
+                    id="continent" 
+                    name="continent" 
+                    onChange={(e) => changeContinent(e.target.checked)}/>
+                <label htmlFor="continent">Continents</label>
             </div>
         </div>
-    </div>
+        <span className="chart-title">Total cases by country/continent (top 10)</span>
+        <ResetButton chart={chart}/>
+        <div id='totalCasesByCountryChart' className="country-bar"/>
+    </>
 }
