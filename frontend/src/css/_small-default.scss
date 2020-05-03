@@ -101,6 +101,7 @@ chart-title {
 
 a.reset {
   margin-left: 10px;
+  cursor: pointer;
 }
 
 .flex-container {
@@ -154,9 +155,16 @@ a.reset {
 
 .mode-select {
   background-color: $color-inco-strong;
+  display: inline-block;
+  margin: 5px;
+  padding: 5px;
+  text-shadow: none;
+  color: black;
 
   &:hover {
     background-color: $color-inco-medlight;
+    color: black;
+    text-decoration: none;
   }
 
   &.mode-active {

@@ -1,4 +1,12 @@
 
+export function autoCompleteCountriesInput(id) {
+  $(document).ready(function() {
+    jQuery.get('/countries', function(countries) {
+      autocomplete(document.getElementById(id), countries['countries']);
+    });
+  });
+}
+
 export function autocomplete(inp, arr) {
     /*the autocomplete function takes two arguments,
     the text field element and an array of possible autocompleted values:*/
@@ -71,6 +79,9 @@ export function autocomplete(inp, arr) {
       removeActive(x);
       if (currentFocus >= x.length) currentFocus = 0;
       if (currentFocus < 0) currentFocus = (x.length - 1);
+
+      // if (x[currentFocus] === undefined) return;
+
       /*add class "autocomplete-active":*/
       x[currentFocus].classList.add("autocomplete-active");
     }
