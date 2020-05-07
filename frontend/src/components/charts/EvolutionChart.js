@@ -59,7 +59,7 @@ function buildChart({
 
     chart.yAxis()
         .tickFormat(function(l) { 
-            if (isLogScale) {
+            if (isLogScale()) {
                 let res = Math.pow(10, Number(l));
                 res = Math.round(res);
                 return res;
@@ -96,7 +96,7 @@ export function EvolutionChart({
             names: names,
             isLogScale: isLogScale
         });
-    }, []);
+    }, [cf]);
 
     return <>
         <span className="chart-title">{title}</span>

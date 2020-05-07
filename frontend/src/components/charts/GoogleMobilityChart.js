@@ -3,7 +3,7 @@ import * as dc from 'dc';
 
 import {useEffect, useState} from "react"
 import {useData} from '../../contexts/DataProvider'
-import {ResetButton, getAvgGroupFunctions, rotateTicks} from '../../helpers/chartHelper'
+import {ResetButton, getAvgGroupFunctions, rotateTicks, enableLegendToggle} from '../../helpers/chartHelper'
 
 var mobilityAccessors = [
     {
@@ -77,6 +77,8 @@ function createChart(id, cf, meta) {
         .compose(composeCharts)
         .brushOn(false)
         ;
+
+    enableLegendToggle(chart);
     
     rotateTicks(chart, true);
 
@@ -95,7 +97,7 @@ export function GoogleMobilityChart({
         let newChart = createChart(id, cf, meta);
         setChart(newChart);
         addChart(newChart);
-    }, []);
+    }, [cf]);
 
     return <>
         <span className="chart-title">{title}</span>

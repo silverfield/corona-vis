@@ -40,7 +40,7 @@ export default function Header({
         }
         // pingServer();
     
-    });
+    }, []);
 
     return (
         <>

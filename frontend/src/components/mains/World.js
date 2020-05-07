@@ -76,7 +76,10 @@ function WorldCasesChart({
 function WorldContent({
 
 }) {
-    const [isLogScale, setIsLogScale] = useState(false);
+    window._isLogScale = false;
+    let isLogScale = () => {
+        return _isLogScale;
+    };
 
     useEffect(() => {
         dc.renderAll();
@@ -96,7 +99,7 @@ function WorldContent({
                     id="log-scale" 
                     name="log-scale" 
                     onChange={(e) => {
-                        setIsLogScale(e.target.checked);
+                        _isLogScale = e.target.checked;
                         dc.redrawAll();
                     }}/>
                 <label htmlFor="log-scale">Log scale (base 10)</label><br/>
@@ -163,6 +166,6 @@ export default function World({
         <WorldControls/>
         <Error/>
         <Loader/>        
-        {data !== null ? <WorldContent/> : <></>}
+        {data !== null ? <WorldContent data={data}/> : <></>}
     </>
 }

@@ -40,7 +40,7 @@ export function avgCalc(value) {
 export function logScale(sourceGroup, isLogScale) {
     return {
         all: function() {
-            if (isLogScale) {
+            if (isLogScale()) {
                 return sourceGroup.all().map(i => {
                     return {
                         key: i.key,
@@ -69,9 +69,12 @@ export function removeEmpty(sourceGroup) {
     };
 }
 
-export function enableLegendToggle(chart, groupToogleFunc) {
+export function enableLegendToggle(chart, defaultOn, groupToogleFunc) {
     if (groupToogleFunc === undefined) {
         groupToogleFunc = (i) => [i];
+    }
+    if (defaultOn === undefined) {
+        defaultOn = true;
     }
 
     function drawLegendToggles(chart) {
@@ -109,8 +112,8 @@ export function enableLegendToggle(chart, groupToogleFunc) {
             .selectAll('g.dc-legend .dc-legend-item')
             .style('opacity', (d, i) => {
                 var subchart = chart.select('g.sub._' + i);
-                subchart.style('stroke-opacity', () => 0.1);
-                return 0.5;
+                subchart.style('stroke-opacity', () => (defaultOn ? 1 : 0.1));
+                return (defaultOn ? 1 : 0.5);
             });
     });
 }

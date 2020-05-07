@@ -43,7 +43,7 @@ export function CountryChart({
         let newChart = createChart(cf, false);
         setChart(newChart);
         addChart(newChart);
-    }, []);
+    }, [cf]);
 
     function changeContinent(newIsContinent) {
         resetChart(chart);

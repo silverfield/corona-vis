@@ -34,6 +34,7 @@ export function DataProvider({
             setData(resData);
 
             setLoading(false);
+            dc.renderAll();
         });
     };
 
