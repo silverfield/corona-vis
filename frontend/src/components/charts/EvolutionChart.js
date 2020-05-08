@@ -71,6 +71,7 @@ function buildChart({
 }
 
 export function EvolutionChart({
+    data,
     id,
     title,
     reduceFunc,
@@ -78,25 +79,24 @@ export function EvolutionChart({
     names,
     isLogScale
 }) {
-    const {cf, meta, addChart} = useData();
     const [chart, setChart] = useState(null);
-    let cfs = Array.isArray(cf) ? cf : [cf];
+    let cfs = Array.isArray(data.cf) ? data.cf : [data.cf];
 
     useEffect(() => {
         let newChart = new dc.CompositeChart(`#${id}`)
         setChart(newChart);
-        addChart(newChart);
+        data.addChart(newChart);
 
         buildChart({
             cfs: cfs,
-            meta: meta,
+            meta: data.meta,
             chart: newChart,
             reduceFunc: reduceFunc,
             colors: colors,
             names: names,
             isLogScale: isLogScale
         });
-    }, [cf]);
+    }, [data.cf]);
 
     return <>
         <span className="chart-title">{title}</span>

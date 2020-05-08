@@ -1,4 +1,4 @@
-import {useData} from '../../contexts/DataProvider'
+import {useData, usedata} from '../../contexts/DataProvider'
 import { useState, useEffect } from 'react';
 import { Error } from '../Error'
 import { Loader } from '../Loader'
@@ -8,21 +8,50 @@ import { EvolutionChart } from '../charts/EvolutionChart'
 import { GoogleMobilityChart } from '../charts/GoogleMobilityChart'
 import { autoCompleteCountriesInput } from '../../helpers/autocomplete'
 
-import * as dc from 'dc';
+import * as d3 from "d3";
+import * as dc from "dc";
+import * as crossfilter from 'crossfilter';
 
 function WorldControls({
-
+    data
 }) {
-    const {loadWorld} = useData();
     const [searchCountry, setSearchCountry] = useState('');
 
     useEffect(() => {
         autoCompleteCountriesInput('search-country');
     }, []);
 
-    function submit() {
-        loadWorld(searchCountry);
+    const _loadFunc = (callBack) => {
+        let request = `/data?search-country=${searchCountry}`;
+
+        d3.csv(request).then(resData => {
+            const dateFormatParser = d3.timeParse('%Y-%m-%d');
+    
+            resData.forEach(d => {
+                d.date = dateFormatParser(d.date);
+            });
+
+            let newCf = crossfilter(resData);
+            data.setCf(newCf);
+
+            let newMeta = {
+                'minDate': Math.min(...resData.map((d) => d.date)),
+                'maxDate': Math.max(...resData.map((d) => d.date))
+            };
+            data.setMeta(newMeta);
+    
+            callBack(resData);
+        });
+    };
+
+    function submit(event) {
+        data.loadData(_loadFunc);
+        event.preventDefault();
     }
+
+    useEffect(() => {
+        data.loadData(_loadFunc);
+    }, []);
 
     return <>
         <form className="controls" autoComplete="false" onSubmit={submit}>
@@ -57,6 +86,7 @@ function WorldControls({
 }
 
 function WorldCasesChart({
+    data,
     id,
     title,
     reduceFunc,
@@ -64,6 +94,7 @@ function WorldCasesChart({
     isLogScale
 }) {
     return <EvolutionChart
+        data={data}
         id={id}
         title={title}
         reduceFunc={reduceFunc}
@@ -74,7 +105,7 @@ function WorldCasesChart({
 }
 
 function WorldContent({
-
+    data
 }) {
     window._isLogScale = false;
     let isLogScale = () => {
@@ -86,10 +117,12 @@ function WorldContent({
     }, []);
 
     return <>
-        <ResetAll/>
+        <ResetAll resetAllCharts={data.resetAllCharts}/>
         <div id="row-by-country" className="row">
             <div className="col-md-12">
-                <CountryChart/>
+                <CountryChart 
+                    data={data}
+                />
             </div>
         </div>
         <div className="evo-controls">
@@ -108,6 +141,7 @@ function WorldContent({
         <div className="row evolution-top-row">
             <div className="col-md-6">
                 <WorldCasesChart
+                    data={data}
                     id="totalCasesInTimeChart"
                     title="Total cases in time"
                     reduceFunc={g => g.reduceSum(d => d.tot_cases)}
@@ -117,6 +151,7 @@ function WorldContent({
             </div>
             <div className="col-md-6">
                 <WorldCasesChart
+                    data={data}   
                     id="newCasesInTimeChart"
                     title="New cases in time"
                     reduceFunc={g => g.reduceSum(d => d.cases)}
@@ -128,6 +163,7 @@ function WorldContent({
         <div className="row">
             <div className="col-md-6">
                 <WorldCasesChart
+                    data={data}
                     id="totalDeathsInTimeChart"
                     title="Total deaths in time"
                     reduceFunc={g => g.reduceSum(d => d.tot_deaths)}
@@ -137,6 +173,7 @@ function WorldContent({
             </div>
             <div className="col-md-6">
                 <WorldCasesChart
+                    data={data}
                     id="newDeathsInTimeChart"
                     title="New deaths in time"
                     reduceFunc={g => g.reduceSum(d => d.deaths)}
@@ -148,6 +185,7 @@ function WorldContent({
         <div id="row-google-mob-single" className="row">
             <div className="col-md-12">
                 <GoogleMobilityChart
+                    data={data}
                     id="mobilityChart"
                     title="Google mobility (% change from baseline)"
                     note="If more than one country is selected, shows average. Some countries don't have the data"
@@ -158,14 +196,12 @@ function WorldContent({
 }
 
 export default function World({
-
+    data
 }) {
-    const {data} = useData();
-
     return <>
-        <WorldControls/>
-        <Error/>
-        <Loader/>        
-        {data !== null ? <WorldContent data={data}/> : <></>}
+        <WorldControls data={data}/>
+        <Error error={data.error}/>
+        <Loader loading={data.loading}/>
+        {(data.data !== null && !data.loading) ? <WorldContent data={data}/> : <></>}
     </>
 }

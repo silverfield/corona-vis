@@ -1,20 +1,22 @@
-import {
-    HashRouter as Router,
-    NavLink,
-} from "react-router-dom";
 import { useState, useEffect } from 'react';
 
 import ScrollToTop from './ScrollToTop.js'
 
 function MenuItem({
-    to,
     title,
+    value,
+    route,
+    setRoute
 }) {
-    return <NavLink to={to} className="mode-select" activeClassName="mode-active">{title}</NavLink>
+    return <span 
+        onClick={() => setRoute(value)} 
+        className={'mode-select' + (route === value ? ' mode-active' : '')}
+    >{title}</span>
 }
 
 export default function Header({
-
+    route,
+    setRoute
 }) {
     const [dataWhen, setDataWhen] = useState({
         'ecdc': '(loading)',
@@ -43,7 +45,7 @@ export default function Header({
     }, []);
 
     return (
-        <>
+        <header>
             <h1 style={{'textAlign': 'center'}}>Covid-19 visualisation</h1>
             <div className="flex-container">
                 <div>
@@ -63,14 +65,10 @@ export default function Header({
             </div>
 
             <nav className="menu">
-                <Router>
-                    <ScrollToTop>
-                    <MenuItem to="/world" title="World"/>
-                    <MenuItem to="/compare" title="Compare"/>
-                    </ScrollToTop>
-                </Router>
+                <MenuItem title="World" value="world" setRoute={setRoute} route={route}/>
+                <MenuItem title="Compare" value="compare" setRoute={setRoute} route={route}/>
             </nav>
-        </>
+        </header>
     );
 }
 

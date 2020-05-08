@@ -34,20 +34,19 @@ function createChart(cf, isContinent) {
 }
 
 export function CountryChart({
-
+    data
 }) {
-    const {cf, addChart} = useData();
     const [chart, setChart] = useState(null);
 
     useEffect(() => {
-        let newChart = createChart(cf, false);
+        let newChart = createChart(data.cf, false);
         setChart(newChart);
-        addChart(newChart);
-    }, [cf]);
+        data.addChart(newChart);
+    }, [data.cf]);
 
     function changeContinent(newIsContinent) {
         resetChart(chart);
-        setDimGroup(chart, cf, newIsContinent);
+        setDimGroup(chart, data.cf, newIsContinent);
         dc.redrawAll();
     };
 

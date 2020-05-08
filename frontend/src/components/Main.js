@@ -1,49 +1,32 @@
-import {
-    HashRouter as Router,
-    Switch,
-    Route,
-} from "react-router-dom";
-
-import {useEffect} from "react"
-import { DataProvider, useData } from '../contexts/DataProvider'
+import { DataProvider, useWorldData, useCompareData } from '../contexts/DataProvider'
 import World from './mains/World'
 import Compare from './mains/Compare'
 
 function Content({
+    route
+}) {  
+    const worldData = useWorldData();
+    const compareData = useCompareData();
 
-}) {
-    const {loadWorld} = useData();
-
-    useEffect(() => {
-        loadWorld('');
-    }, []);
-
-    return <Router>
-        <Switch>
-            <Route path="/" exact component={() => { 
-                window.location.href = '#/world'; 
-                return null;
-            }}/>
-            <Route path="/world">
-                <World />
-            </Route>
-
-            <Route path="/compare" >
-                <Compare />
-            </Route>
-        </Switch>
-    </Router>
+    return <>
+        <div hidden={route !== 'world'}>
+            <World data={worldData}/>
+        </div>
+        <div hidden={route !== 'compare'}>
+            <Compare data={compareData}/>
+        </div> 
+    </>
 }
 
 export default function Main({
-
+    route
 }) {
     return (
-        <>
+        <main>
             <DataProvider>
-                <Content/>
+                <Content route={route}/>
             </DataProvider>
-        </>
+        </main>
     );
   }
   

@@ -1,10 +1,6 @@
-import { useData } from './../contexts/DataProvider'
-
 export function ResetAll({
-
+    resetAllCharts
 }) {
-    const {resetAllCharts} = useData();
-
     return <div className="reset-all-div">
         <a className='reset-all' onClick={resetAllCharts}>
             Reset all charts

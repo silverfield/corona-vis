@@ -86,18 +86,18 @@ function createChart(id, cf, meta) {
 }
 
 export function GoogleMobilityChart({
+    data,
     id,
     title,
     note
 }) {
-    const {cf, addChart, meta} = useData();
     const [chart, setChart] = useState(null);
 
     useEffect(() => {
-        let newChart = createChart(id, cf, meta);
+        let newChart = createChart(id, data.cf, data.meta);
         setChart(newChart);
-        addChart(newChart);
-    }, [cf]);
+        data.addChart(newChart);
+    }, [data.cf]);
 
     return <>
         <span className="chart-title">{title}</span>
