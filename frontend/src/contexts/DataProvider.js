@@ -9,6 +9,9 @@ export function dataProvider() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [meta, setMeta] = useState(null);
+    
+    const [countryCfs, setCountryCfs] = useState(null);
+    const [countryMetas, setCountryMetas] = useState(null);
 
     function addChart(chart) {
         setCharts(prevCharts => [...prevCharts, chart]);
@@ -46,6 +49,10 @@ export function dataProvider() {
         charts, 
         addChart,
         resetAllCharts,
-        cf
+        cf,
+        countryCfs,
+        setCountryCfs,
+        countryMetas,
+        setCountryMetas
     }
 };

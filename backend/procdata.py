@@ -123,6 +123,12 @@ def get_covid_df():
 def get_stringency_df(covid_df):
     df = pd.read_csv('https://oxcgrtportal.azurewebsites.net/api/CSVDownload')
 
+    df['CountryCode'] = df['CountryCode'].replace({
+        'SVK': 'SK',
+        'CZE': 'CZ',
+        'USA': 'US'
+    })
+
     df = consolidate_country_col(df, 'CountryName', 'CountryCode', covid_df)
 
     df['Date'] = df['Date'].astype('str').apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:]}')

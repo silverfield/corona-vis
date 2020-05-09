@@ -186,7 +186,7 @@ function WorldContent({
             <div className="col-md-12">
                 <EvolutionChart
                     data={data}
-                    title="Avg. stringency index"
+                    title="Avg. stringency index (Oxford uni.)"
                     note="Not available for all countries"
                     country2reduceFunc={() =>  (g) => g.reduce(...getAvgGroupFunctions(v => v.stringency))}
                     colors={['green']}

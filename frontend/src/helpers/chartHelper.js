@@ -126,7 +126,7 @@ export function enableLegendToggle(chart, defaultOn, groupToogleFunc) {
 
 export function getAvgGroupFunctions(accessorFunc) {
     function reduceAdd(p, v) {
-        if (accessorFunc(v) !== "") {
+        if (accessorFunc(v) !== null) {
             ++p.count;
             if (p.total === null) {
                 p.total = 0;
@@ -137,7 +137,7 @@ export function getAvgGroupFunctions(accessorFunc) {
     }
     
     function reduceRemove(p, v) {
-        if (accessorFunc(v) !== "") {
+        if (accessorFunc(v) !== null) {
             --p.count;
             if (p.count === 0) {
                 p.total = null;

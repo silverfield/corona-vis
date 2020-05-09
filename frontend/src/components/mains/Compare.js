@@ -60,6 +60,12 @@ function CompareControls({
             };
             data.setMeta(newMeta);
 
+            let newCountryCfs = {};
+            countries.forEach((c) => {
+                newCountryCfs[c] = crossfilter(resData.filter(d => d.country === c));
+            });
+            data.setCountryCfs(newCountryCfs);
+
             callBack(resData);
         }).catch(function(err) {
             data.setError(err.toString());
@@ -209,7 +215,7 @@ function CompareContent({
             <div className="col-md-12">
                 <EvolutionChart
                     data={data}
-                    title="Stringency index"
+                    title="Stringency index (Oxford uni.)"
                     note="Not available for all countries"
                     country2reduceFunc={(country) => (g) => g.reduceSum(d => {
                         return country === d.country ? d.stringency : 0

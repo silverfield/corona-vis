@@ -51,16 +51,28 @@ function getAvgMobilityDimGroup(cf, accessor) {
 
 function getCountryMobilityDimGroup(cf, accessor, country) {
     let dimension = cf.dimension(d => d.date);
-    let group = dimension.group().reduceSum(d => {
-        if (d.country !== country) return 0;
 
-        return d[accessor];
-    });
+    let funcs = getAvgGroupFunctions(v => v.country !== country ? null : v[accessor]);
+    let group = dimension.group().reduce(...funcs);
 
-    return [dimension, group];
+    let filteredGroup = {
+        'all': function () {
+            return group.all().filter(function(d) {
+                return d.value.count > 0;
+            })
+        }
+    };
+
+    return [dimension, filteredGroup];
 }
 
-function createChart(id, cf, meta, countries) {
+function createChart(
+    id, 
+    cf, 
+    countryCfs,
+    meta, 
+    countries
+) {
     let chart = new dc.CompositeChart(`#${id}`);
 
     const makeComposeCharts = (country, i) => {
@@ -76,10 +88,11 @@ function createChart(id, cf, meta, countries) {
                     .group(group, o.accessor)
             }
             else {
-                let [dimension, group] = getCountryMobilityDimGroup(cf, o.accessor, country);
+                let [dimension, group] = getCountryMobilityDimGroup(countryCfs[country], o.accessor, country);
 
                 composeChart = new dc.LineChart(chart)
                     .dimension(dimension)
+                    .valueAccessor(function(p) { return p.value.count > 0 ? p.value.total / p.value.count : null; })
                     .group(group, `${countries[i]} - ${o.accessor}`)
             }
 
@@ -139,7 +152,13 @@ export function GoogleMobilityChart({
             countries = [... new Set(data.data.map(d => d.country))];
         };
 
-        let newChart = createChart(id, data.cf, data.meta, countries);
+        let newChart = createChart(
+            id, 
+            data.cf,
+            data.countryCfs,
+            data.meta, 
+            countries
+        );
         setChart(newChart);
         data.addChart(newChart);
     }, [data.cf]);

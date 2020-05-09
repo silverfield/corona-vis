@@ -8,6 +8,7 @@ import {avgCalc, ResetButton, randomId, removeEmpty, rotateTicks, logScale} from
 
 function buildChart({
     cf, 
+    countryCfs,
     meta, 
     chart, 
     country2reduceFunc,
@@ -18,7 +19,9 @@ function buildChart({
     let makeChart = (country, i) => {
         let lineChart = new dc.LineChart(chart)
 
-        let dimension = cf.dimension(d => d.date);
+        let _cf = country === null ? cf : countryCfs[country];
+
+        let dimension = _cf.dimension(d => d.date);
         let group = dimension.group();
         
         var reduceFunc = country2reduceFunc(country);
@@ -45,7 +48,7 @@ function buildChart({
     
     var charts = null;
     if (countries !== null) {
-        charts = countries.map(makeChart)
+        charts = countries.map(makeChart);
     }
     else {
         charts = [makeChart(null, 0)];
@@ -104,6 +107,7 @@ export function EvolutionChart({
 
         buildChart({
             cf: data.cf,
+            countryCfs: data.countryCfs,
             meta: data.meta,
             chart: newChart,
             country2reduceFunc: country2reduceFunc,
