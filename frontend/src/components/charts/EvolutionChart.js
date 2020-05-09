@@ -3,31 +3,33 @@ import * as dc from 'dc';
 
 import {useEffect, useState} from "react"
 import {useData} from '../../contexts/DataProvider'
-import {ResetButton, removeEmpty, rotateTicks, logScale} from '../../helpers/chartHelper'
+import {avgCalc, ResetButton, randomId, removeEmpty, rotateTicks, logScale} from '../../helpers/chartHelper'
 
 
 function buildChart({
-    cfs, 
+    cf, 
     meta, 
     chart, 
-    reduceFunc,
+    country2reduceFunc,
     colors, 
-    names, 
     isLogScale,
+    countries=null
 }) {
-    let charts = cfs.map((cf, i) => {
+    let makeChart = (country, i) => {
         let lineChart = new dc.LineChart(chart)
 
         let dimension = cf.dimension(d => d.date);
-        let group = reduceFunc(dimension.group());
+        let group = dimension.group();
+        
+        var reduceFunc = country2reduceFunc(country);
+
+        group = reduceFunc(group);
         group = removeEmpty(group);
         group = logScale(group, isLogScale);
 
-        let name = names ? names[i] : null;
-
         lineChart
             .dimension(dimension)
-            .group(group, name)
+            .group(group, country)
             .colors(colors[i])
             .valueAccessor(function(p) { 
                 if (p.value.total !== undefined) {
@@ -39,7 +41,15 @@ function buildChart({
             ;
 
         return lineChart
-    })
+    }
+    
+    var charts = null;
+    if (countries !== null) {
+        charts = countries.map(makeChart)
+    }
+    else {
+        charts = [makeChart(null, 0)];
+    }
 
     chart
         .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
@@ -53,7 +63,7 @@ function buildChart({
         .compose(charts)
         ;
 
-    if (names) {
+    if (countries) {
         chart.legend(dc.legend().x(80).y(0).itemHeight(13).gap(5));
     }
 
@@ -72,35 +82,41 @@ function buildChart({
 
 export function EvolutionChart({
     data,
-    id,
     title,
-    reduceFunc,
+    country2reduceFunc,
     colors,
-    names,
-    isLogScale
+    isLogScale=() => false,
+    byCountry=false,
+    note
 }) {
     const [chart, setChart] = useState(null);
-    let cfs = Array.isArray(data.cf) ? data.cf : [data.cf];
+    var id = randomId();
 
     useEffect(() => {
         let newChart = new dc.CompositeChart(`#${id}`)
         setChart(newChart);
         data.addChart(newChart);
 
+        var countries = null;
+        if (byCountry) {
+            countries = [... new Set(data.data.map(d => d.country))];
+        };
+
         buildChart({
-            cfs: cfs,
+            cf: data.cf,
             meta: data.meta,
             chart: newChart,
-            reduceFunc: reduceFunc,
+            country2reduceFunc: country2reduceFunc,
             colors: colors,
-            names: names,
-            isLogScale: isLogScale
+            isLogScale: isLogScale,
+            countries: countries
         });
     }, [data.cf]);
 
     return <>
         <span className="chart-title">{title}</span>
         <ResetButton chart={chart}/>
+        {note ? <><br/><i className="chart-note">{note}</i></> : <></>}
         <div id={id} className="evolution-chart"/>
     </>
 }

@@ -2,11 +2,7 @@ import {resetChart} from '../helpers/chartHelper'
 import {createContext, useState, useContext} from "react"
 import * as dc from "dc";
 
-const DataContext = createContext(null);
-
-export function DataProvider({
-    children
-}) {
+export function dataProvider() {
     const [data, setData] = useState(null);
     const [cf, setCf] = useState(null);
     const [charts, setCharts] = useState([]);
@@ -25,6 +21,7 @@ export function DataProvider({
 
     const loadData = (loadFunction) => {
         setLoading(true);
+        setError(null);
         dc.chartRegistry.clear();
         setCharts([]);
 
@@ -37,11 +34,12 @@ export function DataProvider({
         });
     };
 
-    return <DataContext.Provider value={{
+    return {
         data, 
         loading, 
         loadData, 
         error, 
+        setError,
         meta,
         setMeta,
         setCf,
@@ -49,11 +47,5 @@ export function DataProvider({
         addChart,
         resetAllCharts,
         cf
-    }}>
-        {children}
-    </DataContext.Provider>
+    }
 };
-
-export const useWorldData = () => useContext(DataContext);
-export const useCompareData = () => useContext(DataContext);
-

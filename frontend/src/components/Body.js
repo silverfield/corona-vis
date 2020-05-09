@@ -6,7 +6,7 @@ import {useEffect, useState} from "react"
 export default function Body({
 
 }) {
-    const [route, setRoute] = useState('world');
+    const [route, setRoute] = useState('compare');
 
     return (
         <>

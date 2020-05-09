@@ -3,7 +3,7 @@ import * as dc from 'dc';
 
 import {useEffect, useState} from "react"
 import {useData} from '../../contexts/DataProvider'
-import {ResetButton, resetChart, rotateTicks} from '../../helpers/chartHelper'
+import {ResetButton, resetChart, rotateTicks, randomId} from '../../helpers/chartHelper'
 
 function setDimGroup(chart, cf, isContinent) {
     let dimension = isContinent ? cf.dimension(d => d.continent) : cf.dimension(d => d.country);
@@ -14,8 +14,8 @@ function setDimGroup(chart, cf, isContinent) {
         .group(group)
 }
 
-function createChart(cf, isContinent) {
-    let chart = new dc.RowChart('#totalCasesByCountryChart');
+function createChart(id, cf, isContinent) {
+    let chart = new dc.RowChart(`#${id}`);
 
     setDimGroup(chart, cf, isContinent);
 
@@ -37,9 +37,10 @@ export function CountryChart({
     data
 }) {
     const [chart, setChart] = useState(null);
+    var id = randomId();
 
     useEffect(() => {
-        let newChart = createChart(data.cf, false);
+        let newChart = createChart(id, data.cf, false);
         setChart(newChart);
         data.addChart(newChart);
     }, [data.cf]);
@@ -63,6 +64,6 @@ export function CountryChart({
         </div>
         <span className="chart-title">Total cases by country/continent (top 10)</span>
         <ResetButton chart={chart}/>
-        <div id='totalCasesByCountryChart' className="country-bar"/>
+        <div id={id} className="country-bar"/>
     </>
 }

@@ -3,7 +3,7 @@ import * as dc from 'dc';
 
 import {useEffect, useState} from "react"
 import {useData} from '../../contexts/DataProvider'
-import {ResetButton, getAvgGroupFunctions, rotateTicks, enableLegendToggle} from '../../helpers/chartHelper'
+import {randomId, ResetButton, getAvgGroupFunctions, rotateTicks, enableLegendToggle} from '../../helpers/chartHelper'
 
 var mobilityAccessors = [
     {
@@ -32,7 +32,7 @@ var mobilityAccessors = [
     },
 ];
 
-function getMobilityDimGroup(cf, accessor) {
+function getAvgMobilityDimGroup(cf, accessor) {
     let dimension = cf.dimension(d => d.date);
 
     let funcs = getAvgGroupFunctions(v => v[accessor]);
@@ -49,19 +49,55 @@ function getMobilityDimGroup(cf, accessor) {
     return [dimension, filteredGroup];
 }
 
-function createChart(id, cf, meta) {
+function getCountryMobilityDimGroup(cf, accessor, country) {
+    let dimension = cf.dimension(d => d.date);
+    let group = dimension.group().reduceSum(d => {
+        if (d.country !== country) return 0;
+
+        return d[accessor];
+    });
+
+    return [dimension, group];
+}
+
+function createChart(id, cf, meta, countries) {
     let chart = new dc.CompositeChart(`#${id}`);
 
-    let composeCharts = mobilityAccessors.map((o) => {
-        let [dimension, group] = getMobilityDimGroup(cf, o.accessor);
+    const makeComposeCharts = (country, i) => {
+        return mobilityAccessors.map((o) => {
+            let composeChart = null;
+            
+            if (country === null) {
+                let [dimension, group] = getAvgMobilityDimGroup(cf, o.accessor);
 
-        return new dc.LineChart(chart)
-            .dimension(dimension)
-            .colors(o.color)
-            .valueAccessor(function(p) { return p.value.count > 0 ? p.value.total / p.value.count : null; })
-            .group(group, o.accessor)
-            .dashStyle([2,2])
-    });
+                composeChart = new dc.LineChart(chart)
+                    .dimension(dimension)
+                    .valueAccessor(function(p) { return p.value.count > 0 ? p.value.total / p.value.count : null; })
+                    .group(group, o.accessor)
+            }
+            else {
+                let [dimension, group] = getCountryMobilityDimGroup(cf, o.accessor, country);
+
+                composeChart = new dc.LineChart(chart)
+                    .dimension(dimension)
+                    .group(group, `${countries[i]} - ${o.accessor}`)
+            }
+
+            composeChart
+                .colors(o.color)
+                .dashStyle([2 + i*5, 2]);
+
+            return composeChart;
+        });
+    };
+
+    var composeCharts = null;
+    if (countries !== null) {
+        composeCharts = countries.map(makeComposeCharts).flat();
+    }
+    else {
+        composeCharts = makeComposeCharts(null, 0);
+    }
 
     chart
         .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
@@ -78,7 +114,10 @@ function createChart(id, cf, meta) {
         .brushOn(false)
         ;
 
-    enableLegendToggle(chart);
+    let legendDefaultOn = countries === null;
+    let countriesLength = countries === null ? 1 : countries.length;
+    let groupToogleFunc = (i) => [...Array(6*countriesLength).keys()].filter(x => x % 6 === i % 6);
+    enableLegendToggle(chart, legendDefaultOn, groupToogleFunc);
     
     rotateTicks(chart, true);
 
@@ -87,14 +126,20 @@ function createChart(id, cf, meta) {
 
 export function GoogleMobilityChart({
     data,
-    id,
     title,
-    note
+    note,
+    byCountry=false
 }) {
     const [chart, setChart] = useState(null);
+    var id = randomId();
 
     useEffect(() => {
-        let newChart = createChart(id, data.cf, data.meta);
+        var countries = null;
+        if (byCountry) {
+            countries = [... new Set(data.data.map(d => d.country))];
+        };
+
+        let newChart = createChart(id, data.cf, data.meta, countries);
         setChart(newChart);
         data.addChart(newChart);
     }, [data.cf]);

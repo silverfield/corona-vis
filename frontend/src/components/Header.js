@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-
-import ScrollToTop from './ScrollToTop.js'
+import * as dc from "dc";
 
 function MenuItem({
     title,
@@ -9,7 +8,10 @@ function MenuItem({
     setRoute
 }) {
     return <span 
-        onClick={() => setRoute(value)} 
+        onClick={() => {
+            setRoute(value);
+            setTimeout(() => dc.renderAll());
+        }}
         className={'mode-select' + (route === value ? ' mode-active' : '')}
     >{title}</span>
 }

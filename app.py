@@ -84,7 +84,7 @@ def create_app():
         if search_country:
             df = df[df['country'].str.lower().str.contains(search_country)]
 
-        return df.to_csv()
+        return df.to_json(orient="records")
 
     @app.route('/one-country')
     def get_compare():
@@ -102,7 +102,7 @@ def create_app():
             }
         d = df[df['country'] == country]
 
-        return d.to_csv()
+        return d.to_json(orient="records")
 
     @app.route('/')
     def main():

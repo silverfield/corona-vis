@@ -11,6 +11,10 @@ export function ResetButton({
     </a>
 }
 
+export function randomId() {
+    return 'a' + Math.random().toString(36).substr(2, 9);
+};
+
 export function resetChart(chart, redraw) {
     chart.filterAll();
 
@@ -59,7 +63,7 @@ export function removeEmpty(sourceGroup) {
         all:function () {
             let filtered = sourceGroup.all().filter(function(i) {
                 if (i.value.count !== undefined) {
-                    return avgCalc(i.value) != null;
+                    return avgCalc(i.value) !== null;
                 }
                 return i.value != 0;
             });
@@ -76,6 +80,8 @@ export function enableLegendToggle(chart, defaultOn, groupToogleFunc) {
     if (defaultOn === undefined) {
         defaultOn = true;
     }
+
+    var hiddenOpacity = 0.15;
 
     function drawLegendToggles(chart) {
         chart
@@ -97,7 +103,7 @@ export function enableLegendToggle(chart, defaultOn, groupToogleFunc) {
                     var subchart = chart.select('g.sub._' + j);
                     var visible = subchart.style('stroke-opacity') === '1';
                     subchart.style('stroke-opacity', function() {
-                        return visible ? 0.1 : 1;
+                        return visible ? hiddenOpacity : 1;
                     });
                 });
           
@@ -112,7 +118,7 @@ export function enableLegendToggle(chart, defaultOn, groupToogleFunc) {
             .selectAll('g.dc-legend .dc-legend-item')
             .style('opacity', (d, i) => {
                 var subchart = chart.select('g.sub._' + i);
-                subchart.style('stroke-opacity', () => (defaultOn ? 1 : 0.1));
+                subchart.style('stroke-opacity', () => (defaultOn ? 1 : hiddenOpacity));
                 return (defaultOn ? 1 : 0.5);
             });
     });
