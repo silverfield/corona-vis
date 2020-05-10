@@ -123,14 +123,35 @@ a.reset {
 
 .controls {
   display: flex;
+  flex-wrap: wrap;
   padding: 10px;
 
+  .input-wrap {
+    display: flex;
+    flex-grow: 1;
+    min-width: 250px;
+    margin-right: 10px;;
+  }
+
+  .input-div {
+    flex-grow: 1;
+    display: flex;
+  }
+
+  .text-input {
+    min-width: 180px;
+    display: flex;
+  }
+
   .control {
-    margin: 10px;
+    margin: 0px;
+    display: flex;
+    flex-wrap: wrap;
   }
 
   .main-controls {
     flex-grow: 1;
+    margin-bottom: 10px;
   }
 
   .submit {
@@ -178,7 +199,8 @@ a.reset {
 }
 
 .country-label {
-  width: 90px;
+  font-size: 1em;
+  width: 85px;
 }
 
 /* ------------------------------------------------------------ */

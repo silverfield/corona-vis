@@ -86,23 +86,26 @@ function CompareControls({
 
     const countryInput = (country, setCountry, index) => {
         return <>
-            <label className="country-label" htmlFor={`country${index}`}>Country {index}:</label>
-            <div className="autocomplete" style={{'width': '300px'}}>
-                <input 
-                    type="text" 
-                    id={`country${index}`}
-                    // placeholder={defaultVal}
-                    autoComplete="off"
-                    value={country}
-                    onChange={(e) => {
-                        setCountry(e.target.value);
-                    }}
-                    onKeyUp={(e) => {
-                        setCountry($(`#country${index}`).val());
-                    }}
-                />
+            <div className="input-wrap">
+                <label className="country-label" htmlFor={`country${index}`}>Country {index}:</label>
+                <div className="autocomplete input-div">
+                    <input 
+                        type="text" 
+                        className="text-input"
+                        id={`country${index}`}
+                        // placeholder={defaultVal}
+                        autoComplete="off"
+                        value={country}
+                        onChange={(e) => {
+                            setCountry(e.target.value);
+                        }}
+                        onKeyUp={(e) => {
+                            setCountry($(`#country${index}`).val());
+                        }}
+                    />
+                </div>
+                <input id={`clear-country${index}`} type="button" value="clear" onClick={() => setCountry('')} />
             </div>
-            <input id={`clear-country${index}`} type="button" value="clear" onClick={() => setCountry('')} />
         </>
     };
 

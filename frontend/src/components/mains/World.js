@@ -61,25 +61,28 @@ function WorldControls({
         <form className="controls" autoComplete="false" onSubmit={submit}>
             <div className="main-controls">
                 <div className="control">
-                    <label htmlFor="search-country">Search country:</label>
-                    <div className="autocomplete" style={{'width': '300px'}}>
-                        <input 
-                            type="text" 
-                            id="search-country" 
-                            placeholder="leave empty for all..."
-                            autoComplete="off"
-                            value={searchCountry}
-                            onChange={(e) => {
-                                setSearchCountry(e.target.value);
-                            }}
-                            onKeyUp={(e) => {
-                                setSearchCountry($('#search-country').val());
-                                e.preventDefault();
-                                if (e.which == 13) submit(); 
-                            }}
-                        />
+                    <div className="input-wrap">
+                        <label className="country-label" htmlFor="search-country">Search country:</label>
+                        <div className="autocomplete input-div">
+                            <input 
+                                type="text" 
+                                id="search-country" 
+                                className="text-input"
+                                placeholder="leave empty for all..."
+                                autoComplete="off"
+                                value={searchCountry}
+                                onChange={(e) => {
+                                    setSearchCountry(e.target.value);
+                                }}
+                                onKeyUp={(e) => {
+                                    setSearchCountry($('#search-country').val());
+                                    e.preventDefault();
+                                    if (e.which == 13) submit(); 
+                                }}
+                            />
+                        </div>
+                        <input id="clear-search-country" type="button" value="clear" onClick={() => setSearchCountry('')} />
                     </div>
-                    <input id="clear-search-country" type="button" value="clear" onClick={() => setSearchCountry('')} />
                 </div>
             </div>
 
