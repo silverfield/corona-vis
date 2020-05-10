@@ -150,6 +150,8 @@ a.reset {
 
   .submit {
     flex-grow: 1;
+    display: flex;
+    margin-bottom: 10px;
 
     input {
       width: 100%;
@@ -162,6 +164,7 @@ a.reset {
   margin: 5px;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .evo-controls {
@@ -178,6 +181,7 @@ a.reset {
   margin-bottom: 0px;
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .error-msg {

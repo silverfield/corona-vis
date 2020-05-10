@@ -4,34 +4,71 @@ import * as dc from 'dc';
 import {useEffect, useState} from "react"
 import {useData} from '../../contexts/DataProvider'
 import {ResetButton, resetChart, rotateTicks, randomId, popScale} from '../../helpers/chartHelper'
+import { min } from "d3";
 
 function setDimGroup({
     chart, 
     cf, 
     isContinent,
-    isScalePop
+    isScalePop,
+    minCases
 }) {
     let dimension = isContinent ? cf.dimension(d => d.continent) : cf.dimension(d => d.country);
-    let group = dimension.group().reduceSum(d => {
-        if (isScalePop) {
-            if (d.population === null || d.population === 0) return null;
 
-            return d.cases / d.population;
+    function reduceAdd(p, v) {
+        p.total += v.cases;
+        p.totalPop += v.population;
+        return p;
+    }
+    
+    function reduceRemove(p, v) {
+        p.total -= v.cases;
+        p.totalPop -= v.population;
+        return p;
+    }
+    
+    function reduceInitial() {
+        return { total: 0, totalPop: 0 };
+    }
+
+    let group = dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);    
+
+    let filteredGroup = {
+        all: function() {
+            return group.all().filter(i => i.value.total > minCases)
         }
-        
-        return d.cases;
-    });
+    }
+
+    let topEntries = filteredGroup.all();
+    let accessorFunc = function(p) {
+        if (isScalePop) {
+            return p.value.total / p.value.totalPop;
+        }
+
+        return p.value.total;
+    }
+    let compareFunc = function(a, b) {return accessorFunc(b) - accessorFunc(a)};
+    topEntries = topEntries.sort(compareFunc);
+    topEntries = topEntries.map(e => e.key).slice(0, 10);
+
+    let topGroup = {
+        all: function() {
+            return filteredGroup.all().filter(i => topEntries.includes(i.key)).sort(compareFunc);
+        }
+    }
 
     chart
         .dimension(dimension)
-        .group(group)
+        .group(topGroup)
+        .valueAccessor(accessorFunc);
 }
 
 function createChart({
     id, 
     cf, 
     isContinent,
-    isScalePop
+    isScalePop,
+    minCases
 }) {
     let chart = new dc.RowChart(`#${id}`);
 
@@ -39,11 +76,11 @@ function createChart({
         chart: chart, 
         cf: cf, 
         isContinent: isContinent,
-        isScalePop: isScalePop
+        isScalePop: isScalePop,
+        minCases: minCases
     });
 
     chart
-        .cap(10)
         .elasticX(true)
         .controlsUseVisibility(true)
         .transitionDuration(500)
@@ -62,6 +99,7 @@ export function CountryChart({
     const [chart, setChart] = useState(null);
     var isContinent = false;
     var isScalePop = false;
+    var minCases = 0;
 
     var id = randomId();
 
@@ -70,23 +108,27 @@ export function CountryChart({
             id: id, 
             cf: data.cf, 
             isContinent: isContinent,
-            isScalePop: isScalePop
+            isScalePop: isScalePop,
+            minCases: minCases
         });
         setChart(newChart);
         data.addChart(newChart);
     }, [data.cf]);
+
+    let refreshDimGroup = () => setDimGroup({
+        chart: chart, 
+        cf: data.cf, 
+        isContinent: isContinent,
+        isScalePop: isScalePop,
+        minCases: minCases
+    });
 
     function changeContinent(newIsContinent) {
         isContinent = newIsContinent;
         resetChart(chart);
         
         setTimeout(() => {
-            setDimGroup({
-                chart: chart, 
-                cf: data.cf, 
-                isContinent: isContinent,
-                isScalePop: isScalePop
-            });
+            refreshDimGroup();
             setTimeout(() => dc.redrawAll());
         })
     };
@@ -96,12 +138,17 @@ export function CountryChart({
         resetChart(chart);
         
         setTimeout(() => {
-            setDimGroup({
-                chart: chart, 
-                cf: data.cf, 
-                isContinent: isContinent,
-                isScalePop: isScalePop
-            });
+            refreshDimGroup();
+            setTimeout(() => dc.redrawAll());
+        })
+    };
+
+    function changeMinCases(newMinCases) {
+        minCases = newMinCases;
+        resetChart(chart);
+        
+        setTimeout(() => {
+            refreshDimGroup();
             setTimeout(() => dc.redrawAll());
         })
     };
@@ -123,6 +170,15 @@ export function CountryChart({
                     name="pop-scale" 
                     onChange={(e) => changeIsScalePop(e.target.checked)}/>
                 <label htmlFor="pop-scale">Scale by population</label>
+            </div>
+            <div className="control">
+                <label className="country-label" htmlFor="min-cases">Min cases</label>
+                <input 
+                    type="number" 
+                    id="min-cases" 
+                    name="min-cases" 
+                    defaultValue="0"
+                    onChange={(e) => changeMinCases(e.target.value)}/>
             </div>
         </div>
         <span className="chart-title">Total cases by country/continent (top 10)</span>
