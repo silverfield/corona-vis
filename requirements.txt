@@ -2,5 +2,6 @@ pandas
 flask
 gunicorn
 xlrd
+requests
 # plotly
 # ipywidgets
