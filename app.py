@@ -39,7 +39,12 @@ def create_app():
 
     def ping():
         print('pinging...')
-        res = requests.get(f'http://localhost:5000/ping')
+        try:
+            res = requests.get(f'https://corona-vis-prod.herokuapp.com/ping')
+            print(res)
+        except Exception as e:
+            print('Error pinging')
+            print(e)
         schedule_next_ping()
 
     def schedule_next_ping(time_sec=PING_TIME_SEC):
@@ -132,7 +137,7 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=False, threaded=True, port=5000)
+    app.run(debug=False, threaded=True)
 else:
     app = create_app()
 
