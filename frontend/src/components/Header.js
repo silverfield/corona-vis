@@ -49,9 +49,8 @@ export default function Header({
 
                 <div style={{'textAlign': 'right'}}>
                     Made by Frantisek Hajnovic <br/>
-                    Powered by <a href="https://dc-js.github.io/dc.js/">dc.js</a>, 
-                    <a href="https://flask.palletsprojects.com/en/1.1.x/quickstart/">flask</a>
-                    and <a href="https://heroku.com/">heroku</a> <br/>
+                    Powered by <a href="https://dc-js.github.io/dc.js/">dc.js</a>, <a href="https://reactjs.org/">react</a>, <br/>
+                    <a href="https://flask.palletsprojects.com/en/1.1.x/quickstart/">flask</a>, <a href="https://pandas.pydata.org/">pandas</a> and <a href="https://heroku.com/">heroku</a> <br/>
                     Check out the code on <a href="https://github.com/silverfield/corona-vis">GitHub</a>
                 </div>
             </div>
