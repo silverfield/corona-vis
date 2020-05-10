@@ -143,12 +143,6 @@ a.reset {
     display: flex;
   }
 
-  .control {
-    margin: 0px;
-    display: flex;
-    flex-wrap: wrap;
-  }
-
   .main-controls {
     flex-grow: 1;
     margin-bottom: 10px;
@@ -164,8 +158,16 @@ a.reset {
   }
 }
 
+.control {
+  margin: 5px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .evo-controls {
   text-align: center;
+  display: flex;
+  justify-content: center;
   margin-top: 0px;
   margin-bottom: -40px;
 }
@@ -174,6 +176,8 @@ a.reset {
   text-align: center;
   margin-top: 10px;
   margin-bottom: 0px;
+  display: flex;
+  justify-content: center;
 }
 
 .error-msg {

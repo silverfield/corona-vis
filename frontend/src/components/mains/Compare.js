@@ -165,17 +165,6 @@ function CompareContent({
 
     return <>
         <ResetAll resetAllCharts={data.resetAllCharts}/>
-        <div className="control">
-            <input 
-                type="checkbox" 
-                id="scale-pop-compare" 
-                name="scale-pop-compare" 
-                onChange={(e) => {
-                    _isScalePopCompare = e.target.checked;
-                    dc.redrawAll();
-                }}/>
-            <label htmlFor="scale-pop-compare">Scale by population</label><br/>
-        </div>
         <div className="evo-controls">
             <div className="control">
                 <input 
@@ -187,6 +176,17 @@ function CompareContent({
                         dc.redrawAll();
                     }}/>
                 <label htmlFor="log-scale-compare">Log scale (base 10)</label><br/>
+            </div>
+            <div className="control">
+                <input 
+                    type="checkbox" 
+                    id="scale-pop-compare" 
+                    name="scale-pop-compare" 
+                    onChange={(e) => {
+                        _isScalePopCompare = e.target.checked;
+                        dc.redrawAll();
+                    }}/>
+                <label htmlFor="scale-pop-compare">Scale by population</label><br/>
             </div>
         </div>
         <div className="row evolution-top-row">
