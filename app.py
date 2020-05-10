@@ -4,12 +4,15 @@ from flask import request
 import atexit
 import threading
 import time
+import requests
 
 current_df = None
 current_df_lock = threading.Lock()
 update_thread = threading.Thread()
+ping_thread = threading.Thread()
 
 SLEEP_TIME_SEC = 60*60
+PING_TIME_SEC = 1*60
 
 def create_app():
     app = Flask(__name__, template_folder='frontend/dist', static_folder='frontend/dist')
@@ -29,11 +32,21 @@ def create_app():
         schedule_next_update(SLEEP_TIME_SEC)
 
     def schedule_next_update(time_sec=SLEEP_TIME_SEC):
-        print(f'sleeping {time_sec} min')
+        print(f'Update thread: sleeping {time_sec} sec')
         global update_thread
         update_thread = threading.Timer(time_sec, update_df, ())
         update_thread.start()
 
+    def ping():
+        print('pinging...')
+        res = requests.get(f'http://localhost:5000/ping')
+        schedule_next_ping()
+
+    def schedule_next_ping(time_sec=PING_TIME_SEC):
+        print(f'Ping thread: sleeping {time_sec} sec')
+        global ping_thread
+        ping_thread = threading.Timer(time_sec, ping, ())
+        ping_thread.start()
 
     def wait_for_data():
         while True:
@@ -109,15 +122,17 @@ def create_app():
         return render_template('index.html')
 
     @app.route('/ping')
-    def ping():
+    def route_ping():
+        print('...pinged')
         return {'ping': 'ok'}
 
     schedule_next_update(0)
+    schedule_next_ping(0)
     return app
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=False)
+    app.run(debug=False, threaded=True, port=5000)
 else:
     app = create_app()
 

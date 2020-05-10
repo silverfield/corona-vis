@@ -34,19 +34,6 @@ export default function Header({
 
             setDataWhen(newDataWhen);
         });
-
-        let pingTimeMin = 1;
-        let pingTimeMs = 1000*60*pingTimeMin; 
-
-        function pingServer() {
-            jQuery.get('/ping', function() {
-                console.log('pining server')
-            });
-    
-            setTimeout(pingServer, pingTimeMs);
-        }
-        pingServer();
-    
     }, []);
 
     return (

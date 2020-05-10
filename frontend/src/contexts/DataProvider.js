@@ -25,15 +25,19 @@ export function dataProvider() {
     const loadData = (loadFunction) => {
         setLoading(true);
         setError(null);
-        dc.chartRegistry.clear();
+        charts.forEach((c) => {
+            dc.chartRegistry.deregister(c);
+        })
         setCharts([]);
 
         loadFunction((resData) => {
             setData(resData);
 
-            dc.renderAll();
+            if (resData !== null) {
+                dc.renderAll();
 
-            setLoading(false);
+                setLoading(false);
+            }
         });
     };
 

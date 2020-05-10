@@ -58,6 +58,23 @@ export function logScale(sourceGroup, isLogScale) {
     }
 }
 
+export function popScale(sourceGroup, isScalePop, population) {
+    return {
+        all: function() {
+            if (isScalePop()) {
+                return sourceGroup.all().map(i => {
+                    return {
+                        key: i.key,
+                        value: i.value/population
+                    }
+                });
+            }
+            
+            return sourceGroup.all();
+        }
+    }
+}
+
 export function removeEmpty(sourceGroup) {
     return {
         all:function () {

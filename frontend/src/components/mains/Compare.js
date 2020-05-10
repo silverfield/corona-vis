@@ -130,7 +130,8 @@ function CompareCasesChart({
     data,
     title,
     country2reduceFunc,
-    isLogScale
+    isLogScale,
+    isScalePop
 }) {
     return <EvolutionChart
         data={data}
@@ -138,6 +139,7 @@ function CompareCasesChart({
         country2reduceFunc={country2reduceFunc}
         colors={['blue', 'green']}
         isLogScale={isLogScale}
+        isScalePop={isScalePop}
         byCountry={true}
     />
 }
@@ -150,13 +152,30 @@ function CompareContent({
         return _isLogScaleCompare;
     };
 
+    window._isScalePopCompare = null;
+    let isScalePop = () => {
+        return _isScalePopCompare;
+    };
+
     useEffect(() => {
         window._isLogScaleCompare = false;
+        window._isScalePopCompare = false;
         dc.renderAll();
     }, []);
 
     return <>
         <ResetAll resetAllCharts={data.resetAllCharts}/>
+        <div className="control">
+            <input 
+                type="checkbox" 
+                id="scale-pop-compare" 
+                name="scale-pop-compare" 
+                onChange={(e) => {
+                    _isScalePopCompare = e.target.checked;
+                    dc.redrawAll();
+                }}/>
+            <label htmlFor="scale-pop-compare">Scale by population</label><br/>
+        </div>
         <div className="evo-controls">
             <div className="control">
                 <input 
@@ -179,6 +198,7 @@ function CompareContent({
                         return country === d.country ? d.tot_cases : 0
                     })}
                     isLogScale={isLogScale}
+                    isScalePop={isScalePop}
                 />
             </div>
             <div className="col-md-6">
@@ -189,6 +209,7 @@ function CompareContent({
                         return country === d.country ? d.cases : 0
                     })}
                     isLogScale={isLogScale}
+                    isScalePop={isScalePop}
                 />
             </div>
         </div>
@@ -201,6 +222,7 @@ function CompareContent({
                         return country === d.country ? d.tot_deaths : 0
                     })}
                     isLogScale={isLogScale}
+                    isScalePop={isScalePop}
                 />
             </div>
             <div className="col-md-6">
@@ -211,6 +233,7 @@ function CompareContent({
                         return country === d.country ? d.deaths : 0
                     })}
                     isLogScale={isLogScale}
+                    isScalePop={isScalePop}
                 />
             </div>
         </div>

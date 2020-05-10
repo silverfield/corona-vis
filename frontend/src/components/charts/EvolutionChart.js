@@ -3,7 +3,7 @@ import * as dc from 'dc';
 
 import {useEffect, useState} from "react"
 import {useData} from '../../contexts/DataProvider'
-import {avgCalc, ResetButton, randomId, removeEmpty, rotateTicks, logScale} from '../../helpers/chartHelper'
+import {avgCalc, ResetButton, randomId, removeEmpty, rotateTicks, logScale, popScale} from '../../helpers/chartHelper'
 
 
 function buildChart({
@@ -14,6 +14,7 @@ function buildChart({
     country2reduceFunc,
     colors, 
     isLogScale,
+    isScalePop,
     countries=null
 }) {
     let makeChart = (country, i) => {
@@ -29,6 +30,9 @@ function buildChart({
         group = reduceFunc(group);
         group = removeEmpty(group);
         group = logScale(group, isLogScale);
+
+        let population = _cf.groupAll().reduceSum(d => d.population).value();
+        group = popScale(group, isScalePop, population);
 
         lineChart
             .dimension(dimension)
@@ -89,6 +93,7 @@ export function EvolutionChart({
     country2reduceFunc,
     colors,
     isLogScale=() => false,
+    isScalePop=() => false,
     byCountry=false,
     note
 }) {
@@ -113,7 +118,8 @@ export function EvolutionChart({
             country2reduceFunc: country2reduceFunc,
             colors: colors,
             isLogScale: isLogScale,
-            countries: countries
+            isScalePop: isScalePop,
+            countries: countries,
         });
     }, [data.cf]);
 

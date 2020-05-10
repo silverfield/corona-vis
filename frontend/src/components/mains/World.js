@@ -98,7 +98,8 @@ function WorldCasesChart({
     title,
     country2reduceFunc,
     color,
-    isLogScale
+    isLogScale,
+    isScalePop
 }) {
     return <EvolutionChart
         data={data}
@@ -107,6 +108,7 @@ function WorldCasesChart({
         colors={[color]}
         names={null}
         isLogScale={isLogScale}
+        isScalePop={isScalePop}
     />
 }
 
@@ -118,8 +120,14 @@ function WorldContent({
         return _isLogScaleWorld;
     };
 
+    window._isScalePopWorld = null;
+    let isScalePop = () => {
+        return _isScalePopWorld;
+    };
+
     useEffect(() => {
         window._isLogScaleWorld = false;
+        window._isScalePopWorld = false;
         dc.renderAll();
     }, []);
 
@@ -144,6 +152,17 @@ function WorldContent({
                     }}/>
                 <label htmlFor="log-scale-world">Log scale (base 10)</label><br/>
             </div>
+            <div className="control">
+                <input 
+                    type="checkbox" 
+                    id="scale-pop-world" 
+                    name="scale-pop-world" 
+                    onChange={(e) => {
+                        _isScalePopWorld = e.target.checked;
+                        dc.redrawAll();
+                    }}/>
+                <label htmlFor="scale-pop-world">Scale by population</label><br/>
+            </div>
         </div>
         <div className="row evolution-top-row">
             <div className="col-md-6">
@@ -153,6 +172,7 @@ function WorldContent({
                     country2reduceFunc={() =>  (group) => group.reduceSum(d => d.tot_cases)}
                     color="blue"
                     isLogScale={isLogScale}
+                    isScalePop={isScalePop}
                 />
             </div>
             <div className="col-md-6">
@@ -162,6 +182,7 @@ function WorldContent({
                     country2reduceFunc={() =>  (group) => group.reduceSum(d => d.cases)}
                     color="blue"
                     isLogScale={isLogScale}
+                    isScalePop={isScalePop}
                 />
             </div>
         </div>
@@ -173,6 +194,7 @@ function WorldContent({
                     country2reduceFunc={() =>  (group) => group.reduceSum(d => d.tot_deaths)}
                     color="red"
                     isLogScale={isLogScale}
+                    isScalePop={isScalePop}
                 />
             </div>
             <div className="col-md-6">
@@ -182,6 +204,7 @@ function WorldContent({
                     country2reduceFunc={() =>  (group) => group.reduceSum(d => d.deaths)}
                     color="red"
                     isLogScale={isLogScale}
+                    isScalePop={isScalePop}
                 />
             </div>
         </div>
