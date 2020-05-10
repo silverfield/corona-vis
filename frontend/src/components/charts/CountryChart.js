@@ -109,11 +109,10 @@ export function CountryChart({
     data
 }) {
     const [chart, setChart] = useState(null);
-    var isContinent = false;
-    var isScalePop = false;
-    var minCases = 0;
     var dimensionWrap = [];
-
+    var [isContinent, setIsContinent] = useState(false);
+    var [isScalePop, setIsScalePop] = useState(false);
+    var [minCases, setMinCases] = useState(0);
     var id = randomId();
 
     useEffect(() => {

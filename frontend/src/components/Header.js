@@ -38,7 +38,7 @@ export default function Header({
 
     return (
         <header>
-            <h1 style={{'textAlign': 'center'}}>Covid-19 visualisation</h1>
+            <h1 style={{'textAlign': 'center'}}>Covid-19 visualisations</h1>
             <div className="flex-container">
                 <div>
                     Data from: <br/>

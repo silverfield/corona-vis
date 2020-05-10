@@ -115,7 +115,8 @@ function WorldCasesChart({
 function WorldContent({
     data
 }) {
-    window._isLogScaleWorld = null;
+    let [isLogScaleState, setIsLogScaleState] = useState(false);
+    window._isLogScaleWorld = isLogScaleState;
     let isLogScale = () => {
         return _isLogScaleWorld;
     };
@@ -126,7 +127,7 @@ function WorldContent({
     };
 
     useEffect(() => {
-        window._isLogScaleWorld = false;
+        window._isLogScaleWorld = isLogScaleState;
         window._isScalePopWorld = false;
         dc.renderAll();
     }, []);
@@ -145,9 +146,11 @@ function WorldContent({
                 <input 
                     type="checkbox" 
                     id="log-scale-world" 
-                    name="log-scale-world" 
+                    name="log-scale-world"
+                    value={isLogScaleState} 
                     onChange={(e) => {
                         _isLogScaleWorld = e.target.checked;
+                        isLogScaleState = _isLogScaleWorld;
                         dc.redrawAll();
                     }}/>
                 <label htmlFor="log-scale-world">Log scale (base 10)</label><br/>
