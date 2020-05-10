@@ -11,9 +11,17 @@ function setDimGroup({
     cf, 
     isContinent,
     isScalePop,
-    minCases
+    minCases,
+    dimensionWrap
 }) {
+    if (dimensionWrap.length > 0) {
+        dimensionWrap.forEach(d => {
+            d.dispose(); 
+            dimensionWrap.pop();
+        });
+    }
     let dimension = isContinent ? cf.dimension(d => d.continent) : cf.dimension(d => d.country);
+    dimensionWrap.push(dimension);
 
     function reduceAdd(p, v) {
         p.total += v.cases;
@@ -42,6 +50,8 @@ function setDimGroup({
     let topEntries = filteredGroup.all();
     let accessorFunc = function(p) {
         if (isScalePop) {
+            if (p.value.totalPop == 0) return null;
+
             return p.value.total / p.value.totalPop;
         }
 
@@ -68,7 +78,8 @@ function createChart({
     cf, 
     isContinent,
     isScalePop,
-    minCases
+    minCases,
+    dimensionWrap
 }) {
     let chart = new dc.RowChart(`#${id}`);
 
@@ -77,7 +88,8 @@ function createChart({
         cf: cf, 
         isContinent: isContinent,
         isScalePop: isScalePop,
-        minCases: minCases
+        minCases: minCases,
+        dimensionWrap: dimensionWrap
     });
 
     chart
@@ -100,6 +112,7 @@ export function CountryChart({
     var isContinent = false;
     var isScalePop = false;
     var minCases = 0;
+    var dimensionWrap = [];
 
     var id = randomId();
 
@@ -109,7 +122,8 @@ export function CountryChart({
             cf: data.cf, 
             isContinent: isContinent,
             isScalePop: isScalePop,
-            minCases: minCases
+            minCases: minCases,
+            dimensionWrap: dimensionWrap
         });
         setChart(newChart);
         data.addChart(newChart);
@@ -120,7 +134,8 @@ export function CountryChart({
         cf: data.cf, 
         isContinent: isContinent,
         isScalePop: isScalePop,
-        minCases: minCases
+        minCases: minCases,
+        dimensionWrap: dimensionWrap
     });
 
     function changeContinent(newIsContinent) {
