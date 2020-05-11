@@ -34,6 +34,14 @@ export function dataProvider() {
             setData(resData);
 
             if (resData !== null) {
+                let mtrCols = Object.keys(resData[0]).filter(k => k.includes('mtr_'));
+
+                resData = resData.map(row => {
+                    row['mtr'] = mtrCols.map(col => row[col]);
+                    mtrCols.forEach(col => delete row[col]);
+                    return row;
+                });
+
                 dc.renderAll();
 
                 setLoading(false);

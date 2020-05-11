@@ -131,14 +131,14 @@ function CompareControls({
 function CompareCasesChart({
     data,
     title,
-    country2reduceFunc,
+    reduceFunc,
     isLogScale,
     isScalePop
 }) {
     return <EvolutionChart
         data={data}
         title={title}
-        country2reduceFunc={country2reduceFunc}
+        reduceFunc={reduceFunc}
         colors={['blue', 'green']}
         isLogScale={isLogScale}
         isScalePop={isScalePop}
@@ -196,9 +196,7 @@ function CompareContent({
                 <CompareCasesChart
                     data={data}
                     title="Total cases in time"
-                    country2reduceFunc={(country) => (g) => g.reduceSum(d => {
-                        return country === d.country ? d.tot_cases : 0
-                    })}
+                    reduceFunc={(g) => g.reduceSum(d => d.tot_cases)}
                     isLogScale={isLogScale}
                     isScalePop={isScalePop}
                 />
@@ -207,9 +205,7 @@ function CompareContent({
                 <CompareCasesChart
                     data={data}   
                     title="New cases in time"
-                    country2reduceFunc={(country) => (g) => g.reduceSum(d => {
-                        return country === d.country ? d.cases : 0
-                    })}
+                    reduceFunc={(g) => g.reduceSum(d => d.cases)}
                     isLogScale={isLogScale}
                     isScalePop={isScalePop}
                 />
@@ -220,9 +216,7 @@ function CompareContent({
                 <CompareCasesChart
                     data={data}
                     title="Total deaths in time"
-                    country2reduceFunc={(country) => (g) => g.reduceSum(d => {
-                        return country === d.country ? d.tot_deaths : 0
-                    })}
+                    reduceFunc={(g) => g.reduceSum(d => d.tot_deaths)}
                     isLogScale={isLogScale}
                     isScalePop={isScalePop}
                 />
@@ -231,9 +225,7 @@ function CompareContent({
                 <CompareCasesChart
                     data={data}
                     title="New deaths in time"
-                    country2reduceFunc={(country) => (g) => g.reduceSum(d => {
-                        return country === d.country ? d.deaths : 0
-                    })}
+                    reduceFunc={(g) => g.reduceSum(d => d.deaths)}
                     isLogScale={isLogScale}
                     isScalePop={isScalePop}
                 />
@@ -245,9 +237,7 @@ function CompareContent({
                     data={data}
                     title="Stringency index (Oxford uni.)"
                     note="Not available for all countries"
-                    country2reduceFunc={(country) => (g) => g.reduceSum(d => {
-                        return country === d.country ? d.stringency : 0
-                    })}
+                    reduceFunc={(g) => g.reduceSum(d => d.stringency)}
                     colors={['blue', 'green']}
                     byCountry={true}
                 />

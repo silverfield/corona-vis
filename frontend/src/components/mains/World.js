@@ -6,6 +6,7 @@ import { ResetAll } from '../ResetAll'
 import { CountryChart } from '../charts/CountryChart'
 import { EvolutionChart } from '../charts/EvolutionChart'
 import { GoogleMobilityChart } from '../charts/GoogleMobilityChart'
+import { StringencyMeasuresChart } from '../charts/StringencyMeasuresChart'
 import { autoCompleteCountriesInput } from '../../helpers/autocomplete'
 import {getAvgGroupFunctions} from '../../helpers/chartHelper'
 
@@ -96,7 +97,7 @@ function WorldControls({
 function WorldCasesChart({
     data,
     title,
-    country2reduceFunc,
+    reduceFunc,
     color,
     isLogScale,
     isScalePop
@@ -104,7 +105,7 @@ function WorldCasesChart({
     return <EvolutionChart
         data={data}
         title={title}
-        country2reduceFunc={country2reduceFunc}
+        reduceFunc={reduceFunc}
         colors={[color]}
         names={null}
         isLogScale={isLogScale}
@@ -172,7 +173,7 @@ function WorldContent({
                 <WorldCasesChart
                     data={data}
                     title="Total cases in time"
-                    country2reduceFunc={() =>  (group) => group.reduceSum(d => d.tot_cases)}
+                    reduceFunc={(group) => group.reduceSum(d => d.tot_cases)}
                     color="blue"
                     isLogScale={isLogScale}
                     isScalePop={isScalePop}
@@ -182,7 +183,7 @@ function WorldContent({
                 <WorldCasesChart
                     data={data}   
                     title="New cases in time"
-                    country2reduceFunc={() =>  (group) => group.reduceSum(d => d.cases)}
+                    reduceFunc={(group) => group.reduceSum(d => d.cases)}
                     color="blue"
                     isLogScale={isLogScale}
                     isScalePop={isScalePop}
@@ -194,7 +195,7 @@ function WorldContent({
                 <WorldCasesChart
                     data={data}
                     title="Total deaths in time"
-                    country2reduceFunc={() =>  (group) => group.reduceSum(d => d.tot_deaths)}
+                    reduceFunc={(group) => group.reduceSum(d => d.tot_deaths)}
                     color="red"
                     isLogScale={isLogScale}
                     isScalePop={isScalePop}
@@ -204,7 +205,7 @@ function WorldContent({
                 <WorldCasesChart
                     data={data}
                     title="New deaths in time"
-                    country2reduceFunc={() =>  (group) => group.reduceSum(d => d.deaths)}
+                    reduceFunc={(group) => group.reduceSum(d => d.deaths)}
                     color="red"
                     isLogScale={isLogScale}
                     isScalePop={isScalePop}
@@ -217,11 +218,21 @@ function WorldContent({
                     data={data}
                     title="Avg. stringency index (Oxford uni.)"
                     note="Not available for all countries"
-                    country2reduceFunc={() =>  (g) => g.reduce(...getAvgGroupFunctions(v => v.stringency))}
+                    reduceFunc={(g) => g.reduce(...getAvgGroupFunctions(v => v.stringency))}
                     colors={['green']}
                 />
             </div>
         </div>
+        {/* <div className="row">
+            <div className="col-md-12">
+                <StringencyMeasuresChart
+                    data={data}
+                    title="Stringency measures"
+                    note="Not available for all countries"
+                    colors={['green']}
+                />
+            </div>
+        </div> */}
         <div id="row-google-mob-single" className="row">
             <div className="col-md-12">
                 <GoogleMobilityChart

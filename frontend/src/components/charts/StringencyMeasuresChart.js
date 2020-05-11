@@ -11,41 +11,52 @@ function buildChart({
     countryCfs,
     meta, 
     chart, 
-    reduceFunc,
     colors, 
-    isLogScale,
-    isScalePop,
     countries=null
 }) {
     let makeChart = (country, i) => {
-        let lineChart = new dc.LineChart(chart)
+        let barChart = new dc.BarChart(chart)
+        debugger;
 
         let _cf = country === null ? cf : countryCfs[country];
 
         let dimension = _cf.dimension(d => d.date);
-        let group = dimension.group();
+
+        let cols = ['mtr_c_school_closing', 'mtr_c_workplace_closing'];
+
+        function reduceAdd(p, v) {
+            p[v.date] = v['mtr'];
+            return p;
+        }
         
-        group = reduceFunc(group);
-        group = removeEmpty(group);
-        group = logScale(group, isLogScale);
-
-        let population = _cf.groupAll().reduceSum(d => d.population).value();
-        group = popScale(group, isScalePop, population);
-
-        lineChart
+        function reduceRemove(p, v) {
+            delete p[v.date];
+            return p;
+        }
+        
+        function reduceInitial() {
+            let p = {};
+            return p;
+        }
+    
+    
+        let group = dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
+        
+        barChart
+            .x(d3.scaleBand())
             .dimension(dimension)
             .group(group, country)
             .colors(colors[i])
             .valueAccessor(function(p) { 
-                if (p.value.total !== undefined) {
-                    return avgCalc(p.value); 
+                if (Object.keys(p.value).length !== 0) {
+                    return p[Math.max(...Object.keys(p.value))]; 
                 }
 
-                return p.value;
+                return null;
             })
             ;
 
-        return lineChart
+        return barChart
     }
     
     var charts = null;
@@ -57,7 +68,7 @@ function buildChart({
     }
 
     chart
-        .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
+        // .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
         .height(150)
         .elasticX(true)
         .elasticY(true)
@@ -72,26 +83,13 @@ function buildChart({
         chart.legend(dc.legend().x(80).y(0).itemHeight(13).gap(5));
     }
 
-    chart.yAxis()
-        .tickFormat(function(l) { 
-            if (isLogScale()) {
-                let res = Math.pow(10, Number(l));
-                res = Math.round(res);
-                return res;
-            }
-            return l;
-        });
-    
     rotateTicks(chart, true);
 }
 
-export function EvolutionChart({
+export function StringencyMeasuresChart({
     data,
     title,
-    reduceFunc,
     colors,
-    isLogScale=() => false,
-    isScalePop=() => false,
     byCountry=false,
     note
 }) {
@@ -113,10 +111,7 @@ export function EvolutionChart({
             countryCfs: data.countryCfs,
             meta: data.meta,
             chart: newChart,
-            reduceFunc: reduceFunc,
             colors: colors,
-            isLogScale: isLogScale,
-            isScalePop: isScalePop,
             countries: countries,
         });
     }, [data.cf]);
@@ -125,6 +120,6 @@ export function EvolutionChart({
         <span className="chart-title">{title}</span>
         <ResetButton chart={chart}/>
         {note ? <><br/><i className="chart-note">{note}</i></> : <></>}
-        <div id={id} className="evolution-chart"/>
+        <div id={id} className="bar-chart"/>
     </>
 }
