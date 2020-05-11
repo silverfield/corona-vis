@@ -30,7 +30,7 @@ def create_app():
 
         print(f'updated DF')
         try:
-            os.system('ps -o pid,user,vsz,rss,command ax | grep flask')
+            os.system('ps -o pid,user,vsz,rss,command ax | grep gunicorn')
         except:
             pass
 
