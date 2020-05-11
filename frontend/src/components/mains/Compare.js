@@ -81,7 +81,9 @@ function CompareControls({
     useEffect(() => {
         data.loadData(_loadFunc);
 
-        [1, 2].forEach(index => autoCompleteCountriesInput(`country${index}`));
+        let setCountryArr = [setCountry1, setCountry2];
+
+        [1, 2].forEach(index => autoCompleteCountriesInput(`country${index}`, setCountryArr[index - 1]));
     }, []);
 
     const countryInput = (country, setCountry, index) => {

@@ -19,7 +19,7 @@ function WorldControls({
     const [searchCountry, setSearchCountry] = useState('');
 
     useEffect(() => {
-        autoCompleteCountriesInput('search-country');
+        autoCompleteCountriesInput('search-country', setSearchCountry);
     }, []);
 
     const _loadFunc = (callBack) => {

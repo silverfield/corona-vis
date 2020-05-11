@@ -5,14 +5,15 @@ import atexit
 import threading
 import time
 import requests
+import os
 
 current_df = None
 current_df_lock = threading.Lock()
 update_thread = threading.Thread()
 ping_thread = threading.Thread()
 
-SLEEP_TIME_SEC = 60*60
-PING_TIME_SEC = 1*60
+UPDATE_TIME_SEC = 60*60
+PING_TIME_SEC = 20*60
 
 def create_app():
     app = Flask(__name__, template_folder='frontend/dist', static_folder='frontend/dist')
@@ -28,10 +29,14 @@ def create_app():
             current_df = df
 
         print(f'updated DF')
+        try:
+            os.system('ps -o pid,user,vsz,rss,command ax | grep flask')
+        except:
+            pass
 
-        schedule_next_update(SLEEP_TIME_SEC)
+        schedule_next_update(UPDATE_TIME_SEC)
 
-    def schedule_next_update(time_sec=SLEEP_TIME_SEC):
+    def schedule_next_update(time_sec=UPDATE_TIME_SEC):
         print(f'Update thread: sleeping {time_sec} sec')
         global update_thread
         update_thread = threading.Timer(time_sec, update_df, ())

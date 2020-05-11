@@ -110,10 +110,6 @@ def get_covid_df():
     df = df.groupby('country').apply(_apply)
     df.index = range(len(df))
 
-    # save data
-    # df.to_csv(f'{get_root()}/vis/src/data.csv')
-    # df.to_csv(f'{get_root()}/data/data.csv')
-
     # check all fields are filled
     assert all(df.count()['date'] == x for x in df.count())
 
@@ -170,7 +166,7 @@ def get_stringency_df(covid_df):
     return df
 
 
-def get_final_df():
+def _get_final_df():
     covid_df = get_covid_df()
 
     df = covid_df
@@ -181,6 +177,25 @@ def get_final_df():
     str_df = get_stringency_df(covid_df)
     df = df.join(str_df.set_index(['country', 'date']), on=['country', 'date'])
 
+    cols_to_drop = [
+        'day', 'month', 'year', 
+        'country_id',
+        'stringency_disp'
+    ]
+    cols_to_drop.extend([c for c in df.columns if 'mtr_' in c and 'mtr_c' not in c])
+    cols_to_drop.extend([c for c in df.columns if '_note' in c or '_flag' in c])
+    
+    for c in set(cols_to_drop):
+        del df[c]
+
     return df
 
+
+def get_final_df():
+    try:
+        return _get_final_df()
+    except Exception as e:
+        print(f'Exception getting the data: {e}')
     
+    print('Using backup')
+    return pd.read_csv(f'{get_root()}/backend/bck_data.csv', index_col=0)
