@@ -100,7 +100,7 @@ function createChart({
         .label(d => d.key)
         .title(d => d.value);
 
-    rotateTicks(chart, true);
+    rotateTicks(chart, false);
 
     return chart
 }

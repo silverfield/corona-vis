@@ -149,19 +149,23 @@ function CompareCasesChart({
 function CompareContent({
     data
 }) {
-    window._isLogScaleCompare = null;
+    let [isLogScaleState, setIsLogScaleState] = useState(false);
+    let [isScalePopState, setIsScalePopState] = useState(false);
+
+    window._isLogScaleCompare = isLogScaleState;
+    window._isScalePopCompare = isScalePopState;
+
     let isLogScale = () => {
         return _isLogScaleCompare;
     };
 
-    window._isScalePopCompare = null;
     let isScalePop = () => {
         return _isScalePopCompare;
     };
 
     useEffect(() => {
-        window._isLogScaleCompare = false;
-        window._isScalePopCompare = false;
+        window._isLogScaleCompare = isLogScaleState;
+        window._isScalePopCompare = isScalePopState;
         dc.renderAll();
     }, []);
 
@@ -175,6 +179,7 @@ function CompareContent({
                     name="log-scale-compare" 
                     onChange={(e) => {
                         _isLogScaleCompare = e.target.checked;
+                        setIsLogScaleState(_isLogScaleCompare);
                         dc.redrawAll();
                     }}/>
                 <label htmlFor="log-scale-compare">Log scale (base 10)</label><br/>
@@ -186,6 +191,7 @@ function CompareContent({
                     name="scale-pop-compare" 
                     onChange={(e) => {
                         _isScalePopCompare = e.target.checked;
+                        setIsScalePopState(_isScalePopCompare);
                         dc.redrawAll();
                     }}/>
                 <label htmlFor="scale-pop-compare">Scale by population</label><br/>

@@ -1,5 +1,6 @@
 import pandas as pd
 import urllib.request
+import traceback
 from backend.common import *
 
 DATA_PATH = f'{get_root()}/data/world.xlsx'
@@ -195,6 +196,7 @@ def get_final_df():
     try:
         return _get_final_df()
     except Exception as e:
+        traceback.print_stack()
         print(f'Exception getting the data: {e}')
     
     print('Using backup')

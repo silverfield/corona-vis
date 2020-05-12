@@ -29,6 +29,14 @@ header {
     h1 {
         font-size: 2em;
     }
+
+    .hr-header {
+      min-width: 100%;
+    }
+
+    .header-coltext {
+      flex-basis: 50%;
+    }
 }
 
 /* ------------------------------------------------------------ */
@@ -165,6 +173,7 @@ a.reset {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
 }
 
 .evo-controls {

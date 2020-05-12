@@ -3,7 +3,7 @@ import * as dc from 'dc';
 
 import {useEffect, useState} from "react"
 import {useData} from '../../contexts/DataProvider'
-import {avgCalc, ResetButton, randomId, removeEmpty, rotateTicks, logScale, popScale} from '../../helpers/chartHelper'
+import {getAvgGroupFunctions, avgCalc, ResetButton, randomId, removeEmpty, rotateTicks, logScale, popScale} from '../../helpers/chartHelper'
 
 
 function buildChart({
@@ -12,66 +12,105 @@ function buildChart({
     meta, 
     chart, 
     colors, 
-    countries=null
+    countries=null,
+    mtrCols
 }) {
-    let makeChart = (country, i) => {
-        let barChart = new dc.BarChart(chart)
-        debugger;
-
+    console.log(mtrCols);
+    console.log(colors);
+    let makeCharts = (country, i) => {
         let _cf = country === null ? cf : countryCfs[country];
+
+        let barChart = new dc.BarChart(chart);
 
         let dimension = _cf.dimension(d => d.date);
 
-        let cols = ['mtr_c_school_closing', 'mtr_c_workplace_closing'];
+        // function reduceAdd(p, v) {
+        //     if (accessorFunc(v) !== null) {
+        //         ++p.count;
+        //         if (p.total === null) {
+        //             p.total = 0;
+        //         }
+        //         p.total += Number(accessorFunc(v));
+        //     }
+        //     return p;
+        // }
+        
+        // function reduceRemove(p, v) {
+        //     if (accessorFunc(v) !== null) {
+        //         --p.count;
+        //         if (p.count === 0) {
+        //             p.total = null;
+        //         }
+        //         else {
+        //             if (p.total === null) {
+        //                 p.total = 0;
+        //             }
+        //             p.total -= Number(accessorFunc(v));
+        //         }
+        //     }
+        //     return p;
+        // }
+        
+        // function reduceInitial() {
+        //     return {count: 0, total: null};
+        // }
+    
+        // return [reduceAdd, reduceRemove, reduceInitial];
 
-        function reduceAdd(p, v) {
-            p[v.date] = v['mtr'];
-            return p;
+        let avgFuncs = getAvgGroupFunctions(d => d[mtrCol])
+        let group = dimension.group().reduce(...avgFuncs);
+
+        let g = {
+            'all': () => {
+                return mtrCols.map((c, i) => {
+                    return {
+                        'key': c,
+                        'value': i
+                    }
+                });
+
+                let keys = group.all().map(x => x.key);
+                let maxKey = new Date(Math.max.apply(null, keys));
+
+                let maxItems = group.all().filter(d => (d.key.getTime() === maxKey.getTime()) && (d.value.count > 0));
+                if (maxItems.length === 0) {
+                    return [];
+                }
+                
+                return [{
+                    key: mtrCol,
+                    value: maxItems[0].value.total / maxItems[0].value.count
+                }];
+            }
         }
-        
-        function reduceRemove(p, v) {
-            delete p[v.date];
-            return p;
-        }
-        
-        function reduceInitial() {
-            let p = {};
-            return p;
-        }
-    
-    
-        let group = dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
+        console.log(g.all());
         
         barChart
-            .x(d3.scaleBand())
             .dimension(dimension)
-            .group(group, country)
+            .group(g, country)
             .colors(colors[i])
-            .valueAccessor(function(p) { 
-                if (Object.keys(p.value).length !== 0) {
-                    return p[Math.max(...Object.keys(p.value))]; 
-                }
-
-                return null;
-            })
             ;
 
-        return barChart
+        return barChart;
     }
     
-    var charts = null;
-    if (countries !== null) {
-        charts = countries.map(makeChart);
-    }
-    else {
-        charts = [makeChart(null, 0)];
-    }
+    // var charts = null;
+    // if (countries !== null) {
+    //     charts = countries.map(makeCharts);
+    // }
+    // else {
+    let charts = [makeCharts(null, 0)];
+    console.log(charts);
+    // }
 
+    // console.log(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]));
     chart
+        .x(d3.scaleOrdinal().domain(mtrCols))
         // .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
-        .height(150)
         .elasticX(true)
         .elasticY(true)
+        .height(150)
+        .brushOn(false)
         .transitionDuration(500)
         .margins({top: 0, right: 50, bottom: 40, left: 70})
         .renderHorizontalGridLines(true)
@@ -83,7 +122,7 @@ function buildChart({
         chart.legend(dc.legend().x(80).y(0).itemHeight(13).gap(5));
     }
 
-    rotateTicks(chart, true);
+    // rotateTicks(chart, true);
 }
 
 export function StringencyMeasuresChart({
@@ -113,6 +152,7 @@ export function StringencyMeasuresChart({
             chart: newChart,
             colors: colors,
             countries: countries,
+            mtrCols: data.mtrCols
         });
     }, [data.cf]);
 

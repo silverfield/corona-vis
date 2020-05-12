@@ -9,6 +9,7 @@ export function dataProvider() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [meta, setMeta] = useState(null);
+    const [mtrCols, setMtrCols] = useState(null);
     
     const [countryCfs, setCountryCfs] = useState(null);
     const [countryMetas, setCountryMetas] = useState(null);
@@ -34,13 +35,14 @@ export function dataProvider() {
             setData(resData);
 
             if (resData !== null) {
-                let mtrCols = Object.keys(resData[0]).filter(k => k.includes('mtr_'));
+                let newMtrCols = Object.keys(resData[0]).filter(k => k.includes('mtr_'));
+                setMtrCols(newMtrCols);
 
-                resData = resData.map(row => {
-                    row['mtr'] = mtrCols.map(col => row[col]);
-                    mtrCols.forEach(col => delete row[col]);
-                    return row;
-                });
+                // resData = resData.map(row => {
+                //     row['mtr'] = mtrCols.map(col => row[col]);
+                //     mtrCols.forEach(col => delete row[col]);
+                //     return row;
+                // });
 
                 dc.renderAll();
 
@@ -65,6 +67,7 @@ export function dataProvider() {
         countryCfs,
         setCountryCfs,
         countryMetas,
-        setCountryMetas
+        setCountryMetas,
+        mtrCols
     }
 };

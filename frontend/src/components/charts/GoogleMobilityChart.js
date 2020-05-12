@@ -35,7 +35,7 @@ var mobilityAccessors = [
 function getAvgMobilityDimGroup(cf, accessor) {
     let dimension = cf.dimension(d => d.date);
 
-    let funcs = getAvgGroupFunctions(v => v[accessor]);
+let funcs = getAvgGroupFunctions(v => v[accessor]);
     let group = dimension.group().reduce(...funcs);
 
     let filteredGroup = {

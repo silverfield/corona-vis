@@ -117,24 +117,36 @@ function WorldContent({
     data
 }) {
     let [isLogScaleState, setIsLogScaleState] = useState(false);
+    let [isScalePopState, setIsScalePopState] = useState(false);
+
     window._isLogScaleWorld = isLogScaleState;
+    window._isScalePopWorld = isScalePopState;
+    
     let isLogScale = () => {
         return _isLogScaleWorld;
     };
-
-    window._isScalePopWorld = null;
     let isScalePop = () => {
         return _isScalePopWorld;
     };
 
     useEffect(() => {
         window._isLogScaleWorld = isLogScaleState;
-        window._isScalePopWorld = false;
+        window._isScalePopWorld = isScalePopState;
         dc.renderAll();
     }, []);
 
     return <>
         <ResetAll resetAllCharts={data.resetAllCharts}/>
+        <div className="row">
+            <div className="col-md-12">
+                <StringencyMeasuresChart
+                    data={data}
+                    title="Stringency measures"
+                    note="Not available for all countries"
+                    colors={['green']}
+                />
+            </div>
+        </div>
         <div id="row-by-country" className="row">
             <div className="col-md-12">
                 <CountryChart 
@@ -151,7 +163,7 @@ function WorldContent({
                     value={isLogScaleState} 
                     onChange={(e) => {
                         _isLogScaleWorld = e.target.checked;
-                        isLogScaleState = _isLogScaleWorld;
+                        setIsLogScaleState(_isLogScaleWorld);
                         dc.redrawAll();
                     }}/>
                 <label htmlFor="log-scale-world">Log scale (base 10)</label><br/>
@@ -163,6 +175,7 @@ function WorldContent({
                     name="scale-pop-world" 
                     onChange={(e) => {
                         _isScalePopWorld = e.target.checked;
+                        setIsScalePopState(_isScalePopWorld);
                         dc.redrawAll();
                     }}/>
                 <label htmlFor="scale-pop-world">Scale by population</label><br/>
@@ -223,16 +236,6 @@ function WorldContent({
                 />
             </div>
         </div>
-        {/* <div className="row">
-            <div className="col-md-12">
-                <StringencyMeasuresChart
-                    data={data}
-                    title="Stringency measures"
-                    note="Not available for all countries"
-                    colors={['green']}
-                />
-            </div>
-        </div> */}
         <div id="row-google-mob-single" className="row">
             <div className="col-md-12">
                 <GoogleMobilityChart

@@ -140,9 +140,8 @@ def create_app():
     schedule_next_ping(0)
     return app
 
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     app.run(debug=False, threaded=True)
-else:
-    app = create_app()
 
