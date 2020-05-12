@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import * as dc from 'dc';
+import {units} from 'dc';
 
 import {useEffect, useState} from "react"
 import {useData} from '../../contexts/DataProvider'
@@ -13,106 +14,102 @@ function buildChart({
     chart, 
     colors, 
     countries=null,
-    mtrCols
+    mtrCols,
 }) {
-    console.log(mtrCols);
-    console.log(colors);
-    let makeCharts = (country, i) => {
+    console.log(countries);
+
+    let makeChart = (country, i) => {
         let _cf = country === null ? cf : countryCfs[country];
 
         let barChart = new dc.BarChart(chart);
 
         let dimension = _cf.dimension(d => d.date);
 
-        // function reduceAdd(p, v) {
-        //     if (accessorFunc(v) !== null) {
-        //         ++p.count;
-        //         if (p.total === null) {
-        //             p.total = 0;
-        //         }
-        //         p.total += Number(accessorFunc(v));
-        //     }
-        //     return p;
-        // }
-        
-        // function reduceRemove(p, v) {
-        //     if (accessorFunc(v) !== null) {
-        //         --p.count;
-        //         if (p.count === 0) {
-        //             p.total = null;
-        //         }
-        //         else {
-        //             if (p.total === null) {
-        //                 p.total = 0;
-        //             }
-        //             p.total -= Number(accessorFunc(v));
-        //         }
-        //     }
-        //     return p;
-        // }
-        
-        // function reduceInitial() {
-        //     return {count: 0, total: null};
-        // }
-    
-        // return [reduceAdd, reduceRemove, reduceInitial];
+        function reduceAdd(m, v) {
+            mtrCols.forEach(c => {
+                if (v[c] !== null) {
+                    ++m[c].count;
+                    if (m[c].total === null) {
+                        m[c].total = 0;
+                    }
+                    m[c].total += Number(v[c]);
+                }
+            });
 
-        let avgFuncs = getAvgGroupFunctions(d => d[mtrCol])
-        let group = dimension.group().reduce(...avgFuncs);
+            return m
+        }
+        
+        function reduceRemove(m, v) {
+            mtrCols.forEach(c => {
+                if (v[c] !== null) {
+                    --m[c].count;
+                    if (m[c].count === 0) {
+                        m[c].total = null;
+                    }
+                    else {
+                        if (m[c].total === null) {
+                            m[c].total = 0;
+                        }
+                        m[c].total -= Number(v[c]);
+                    }
+                }
+            });
+
+            return m;
+        }
+        
+        function reduceInitial() {
+            let m = {};
+            mtrCols.forEach(c => {
+                m[c] = {count: 0, total: null}
+            });
+            return m;
+        }
+
+        let group = dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
 
         let g = {
             'all': () => {
-                return mtrCols.map((c, i) => {
+                return mtrCols.map(c => {
+                    let okItems = group.all().filter(d => d.value[c].count > 0);
+                    let maxKey = new Date(Math.max.apply(null, okItems.map(x => x.key)));
+                    let maxItems = okItems.filter(d => d.key.getTime() === maxKey.getTime());
+
                     return {
-                        'key': c,
-                        'value': i
-                    }
+                        key: c,
+                        value: maxItems.length === 0 ? null : maxItems[0].value[c].total / maxItems[0].value[c].count
+                    };
                 });
-
-                let keys = group.all().map(x => x.key);
-                let maxKey = new Date(Math.max.apply(null, keys));
-
-                let maxItems = group.all().filter(d => (d.key.getTime() === maxKey.getTime()) && (d.value.count > 0));
-                if (maxItems.length === 0) {
-                    return [];
-                }
-                
-                return [{
-                    key: mtrCol,
-                    value: maxItems[0].value.total / maxItems[0].value.count
-                }];
             }
         }
-        console.log(g.all());
         
         barChart
             .dimension(dimension)
             .group(g, country)
             .colors(colors[i])
+            .x(d3.scaleOrdinal())
+            .xUnits(units.ordinal)
             ;
 
         return barChart;
     }
     
-    // var charts = null;
-    // if (countries !== null) {
-    //     charts = countries.map(makeCharts);
-    // }
-    // else {
-    let charts = [makeCharts(null, 0)];
-    console.log(charts);
-    // }
+    var charts = null;
+    if (countries !== null) {
+        charts = countries.map(makeChart);
+    }
+    else {
+        charts = [makeChart(null, 0)];
+    }
 
-    // console.log(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]));
     chart
-        .x(d3.scaleOrdinal().domain(mtrCols))
-        // .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
-        .elasticX(true)
+        .x(d3.scaleOrdinal().domain(mtrCols).range([0, 1000]))
+        .xUnits(units.ordinal)
         .elasticY(true)
-        .height(150)
+        .height(250)
         .brushOn(false)
         .transitionDuration(500)
-        .margins({top: 0, right: 50, bottom: 40, left: 70})
+        .margins({top: 0, right: 50, bottom: 100, left: 70})
         .renderHorizontalGridLines(true)
         .controlsUseVisibility(true)
         .compose(charts)
@@ -122,7 +119,7 @@ function buildChart({
         chart.legend(dc.legend().x(80).y(0).itemHeight(13).gap(5));
     }
 
-    // rotateTicks(chart, true);
+    rotateTicks(chart, true);
 }
 
 export function StringencyMeasuresChart({
@@ -152,7 +149,7 @@ export function StringencyMeasuresChart({
             chart: newChart,
             colors: colors,
             countries: countries,
-            mtrCols: data.mtrCols
+            mtrCols: data.mtrCols,
         });
     }, [data.cf]);
 

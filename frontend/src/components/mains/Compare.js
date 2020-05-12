@@ -6,6 +6,7 @@ import { Loader } from '../Loader'
 import { ResetAll } from '../ResetAll'
 import { CountryChart } from '../charts/CountryChart'
 import { EvolutionChart } from '../charts/EvolutionChart'
+import { StringencyMeasuresChart } from '../charts/StringencyMeasuresChart'
 import { GoogleMobilityChart } from '../charts/GoogleMobilityChart'
 import { autoCompleteCountriesInput } from '../../helpers/autocomplete'
 import {getAvgGroupFunctions } from '../../helpers/chartHelper'
@@ -171,6 +172,17 @@ function CompareContent({
 
     return <>
         <ResetAll resetAllCharts={data.resetAllCharts}/>
+        <div className="row">
+            <div className="col-md-12">
+                <StringencyMeasuresChart
+                    data={data}
+                    title="Stringency measures"
+                    note="Not available for all countries"
+                    colors={['blue', 'green']}
+                    byCountry={true}
+                />
+            </div>
+        </div>
         <div className="evo-controls">
             <div className="control">
                 <input 
