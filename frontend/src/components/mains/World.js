@@ -137,16 +137,6 @@ function WorldContent({
 
     return <>
         <ResetAll resetAllCharts={data.resetAllCharts}/>
-        <div className="row">
-            <div className="col-md-12">
-                <StringencyMeasuresChart
-                    data={data}
-                    title="Stringency measures"
-                    note="Not available for all countries"
-                    colors={['green']}
-                />
-            </div>
-        </div>
         <div id="row-by-country" className="row">
             <div className="col-md-12">
                 <CountryChart 
@@ -236,12 +226,22 @@ function WorldContent({
                 />
             </div>
         </div>
+        <div className="row">
+            <div className="col-md-12">
+                <StringencyMeasuresChart
+                    data={data}
+                    title="Stringency measures"
+                    note="Each metric scaled to 0..1, where 1 = highest stringency. Displayes most recent values from the selected time period, averaged across countries. Not available for all countries"
+                    colors={['green']}
+                />
+            </div>
+        </div>
         <div id="row-google-mob-single" className="row">
             <div className="col-md-12">
                 <GoogleMobilityChart
                     data={data}
                     title="Google mobility (% change from baseline)"
-                    note="If more than one country is selected, shows average. Some countries don't have the data"
+                    note="If more than one country is selected, shows average. Not available for all countries"
                 />
             </div>
         </div>

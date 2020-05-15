@@ -1,11 +1,17 @@
 import * as dc from 'dc';
 
+export const countryColors = ['#0074D9', '#85144b']
+
 export function ResetButton({
     chart
 }) {
+    const reset = () => {
+        Array.isArray(chart) ? chart.forEach(c => resetChart(c, true)) : resetChart(chart, true)
+    }
+
     return <a 
         className='reset'
-        onClick={() => resetChart(chart, true)}
+        onClick={() => reset()}
     >
         (reset)
     </a>
@@ -23,7 +29,11 @@ export function resetChart(chart, redraw) {
     }
 };
 
-export function rotateTicks(chart, onlyX) {
+export function rotateTicks(chart, onlyX, rotate, trX, trY) {
+    if (rotate === undefined) rotate = -65;
+    if (trX === undefined) trX = -25;
+    if (trY === undefined) trY = -10;
+
     chart.on('renderlet', function(_chart) {
         let tickSelector = "g.tick text";
 
@@ -33,7 +43,7 @@ export function rotateTicks(chart, onlyX) {
 
         _chart
             .selectAll(tickSelector)
-            .attr('transform', "rotate(-65) translate(-25 -10)");
+            .attr('transform', `rotate(${rotate}) translate(${trX} ${trY})`);
     });
 }
 

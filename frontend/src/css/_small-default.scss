@@ -230,6 +230,17 @@ a.reset {
   flex-direction: column;
 }
 
+.stringency-charts {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+
+  .bar-chart {
+    flex-grow: 0.5;
+    min-width: 300px;
+  }
+}
+
 /* ------------------------------------------------------------ */
 /* Footer */
 /* ------------------------------------------------------------ */

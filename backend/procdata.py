@@ -185,9 +185,13 @@ def _get_final_df():
     ]
     cols_to_drop.extend([c for c in df.columns if 'mtr_' in c and 'mtr_c' not in c])
     cols_to_drop.extend([c for c in df.columns if '_note' in c or '_flag' in c])
-    
+
     for c in set(cols_to_drop):
         del df[c]
+
+
+    mtr_cols = [c for c in df.columns if c.startswith('mtr_c')]
+    df[mtr_cols] = df[mtr_cols]/df[mtr_cols].max()
 
     return df
 

@@ -9,7 +9,7 @@ import { EvolutionChart } from '../charts/EvolutionChart'
 import { StringencyMeasuresChart } from '../charts/StringencyMeasuresChart'
 import { GoogleMobilityChart } from '../charts/GoogleMobilityChart'
 import { autoCompleteCountriesInput } from '../../helpers/autocomplete'
-import {getAvgGroupFunctions } from '../../helpers/chartHelper'
+import {getAvgGroupFunctions, countryColors } from '../../helpers/chartHelper'
 
 import * as d3 from "d3";
 import * as dc from "dc";
@@ -140,7 +140,7 @@ function CompareCasesChart({
         data={data}
         title={title}
         reduceFunc={reduceFunc}
-        colors={['blue', 'green']}
+        colors={countryColors}
         isLogScale={isLogScale}
         isScalePop={isScalePop}
         byCountry={true}
@@ -172,17 +172,6 @@ function CompareContent({
 
     return <>
         <ResetAll resetAllCharts={data.resetAllCharts}/>
-        <div className="row">
-            <div className="col-md-12">
-                <StringencyMeasuresChart
-                    data={data}
-                    title="Stringency measures"
-                    note="Not available for all countries"
-                    colors={['blue', 'green']}
-                    byCountry={true}
-                />
-            </div>
-        </div>
         <div className="evo-controls">
             <div className="control">
                 <input 
@@ -256,7 +245,18 @@ function CompareContent({
                     title="Stringency index (Oxford uni.)"
                     note="Not available for all countries"
                     reduceFunc={(g) => g.reduceSum(d => d.stringency)}
-                    colors={['blue', 'green']}
+                    colors={countryColors}
+                    byCountry={true}
+                />
+            </div>
+        </div>
+        <div className="row">
+            <div className="col-md-12">
+                <StringencyMeasuresChart
+                    data={data}
+                    title="Stringency measures"
+                    note="Each metric scaled to 0..1, where 1 = highest stringency. Displayes most recent values from the selected time period. Not available for all countries"
+                    colors={countryColors}
                     byCountry={true}
                 />
             </div>
@@ -266,7 +266,7 @@ function CompareContent({
                 <GoogleMobilityChart
                     data={data}
                     title="Google mobility (% change from baseline)"
-                    note="Some countries don't have the data"
+                    note="Not available for all countries"
                     byCountry={true}
                 />
             </div>

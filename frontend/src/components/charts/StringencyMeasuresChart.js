@@ -8,118 +8,110 @@ import {getAvgGroupFunctions, avgCalc, ResetButton, randomId, removeEmpty, rotat
 
 
 function buildChart({
-    cf, 
-    countryCfs,
+    cf,
+    countryCfs, 
+    countries,
     meta, 
     chart, 
-    colors, 
-    countries=null,
+    color, 
     mtrCols,
 }) {
-    console.log(countries);
+    let dimension = cf.dimension(d => d.date);
 
-    let makeChart = (country, i) => {
-        let _cf = country === null ? cf : countryCfs[country];
+    function reduceAdd(m, v) {
+        mtrCols.forEach(c => {
+            if (v[c] !== null) {
+                ++m[c].count;
+                if (m[c].total === null) {
+                    m[c].total = 0;
+                }
+                m[c].total += Number(v[c]);
+            }
+        });
 
-        let barChart = new dc.BarChart(chart);
-
-        let dimension = _cf.dimension(d => d.date);
-
-        function reduceAdd(m, v) {
-            mtrCols.forEach(c => {
-                if (v[c] !== null) {
-                    ++m[c].count;
+        return m
+    }
+    
+    function reduceRemove(m, v) {
+        mtrCols.forEach(c => {
+            if (v[c] !== null) {
+                --m[c].count;
+                if (m[c].count === 0) {
+                    m[c].total = null;
+                }
+                else {
                     if (m[c].total === null) {
                         m[c].total = 0;
                     }
-                    m[c].total += Number(v[c]);
+                    m[c].total -= Number(v[c]);
                 }
-            });
-
-            return m
-        }
-        
-        function reduceRemove(m, v) {
-            mtrCols.forEach(c => {
-                if (v[c] !== null) {
-                    --m[c].count;
-                    if (m[c].count === 0) {
-                        m[c].total = null;
-                    }
-                    else {
-                        if (m[c].total === null) {
-                            m[c].total = 0;
-                        }
-                        m[c].total -= Number(v[c]);
-                    }
-                }
-            });
-
-            return m;
-        }
-        
-        function reduceInitial() {
-            let m = {};
-            mtrCols.forEach(c => {
-                m[c] = {count: 0, total: null}
-            });
-            return m;
-        }
-
-        let group = dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
-
-        let g = {
-            'all': () => {
-                return mtrCols.map(c => {
-                    let okItems = group.all().filter(d => d.value[c].count > 0);
-                    let maxKey = new Date(Math.max.apply(null, okItems.map(x => x.key)));
-                    let maxItems = okItems.filter(d => d.key.getTime() === maxKey.getTime());
-
-                    return {
-                        key: c,
-                        value: maxItems.length === 0 ? null : maxItems[0].value[c].total / maxItems[0].value[c].count
-                    };
-                });
             }
-        }
-        
-        barChart
-            .dimension(dimension)
-            .group(g, country)
-            .colors(colors[i])
-            .x(d3.scaleOrdinal())
-            .xUnits(units.ordinal)
-            ;
+        });
 
-        return barChart;
+        return m;
     }
     
-    var charts = null;
-    if (countries !== null) {
-        charts = countries.map(makeChart);
-    }
-    else {
-        charts = [makeChart(null, 0)];
+    function reduceInitial() {
+        let m = {};
+        mtrCols.forEach(c => {
+            m[c] = {count: 0, total: null}
+        });
+        return m;
     }
 
+    let group = dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
+
+    let g = {
+        'all': () => {
+            return mtrCols.map((c, k) => {
+                let okItems = group.all().filter(d => d.value[c].count > 0);
+                let maxKey = new Date(Math.max.apply(null, okItems.map(x => x.key)));
+                let maxItems = okItems.filter(d => d.key.getTime() === maxKey.getTime());
+
+                return {
+                    key: c,
+                    value: maxItems.length === 0 ? null : maxItems[0].value[c].total / maxItems[0].value[c].count
+                };
+            });
+        }
+    }
+    
     chart
-        .x(d3.scaleOrdinal().domain(mtrCols).range([0, 1000]))
-        .xUnits(units.ordinal)
+        .barPadding(0.2)
+        .outerPadding(0.5)
         .elasticY(true)
+        .dimension(dimension)
+        .group(g, country)
+        .colors(color)
+        .x(d3.scaleOrdinal())
+        .xUnits(units.ordinal)
         .height(250)
         .brushOn(false)
         .transitionDuration(500)
-        .margins({top: 0, right: 50, bottom: 100, left: 70})
+        .margins({top: 20, right: 20, bottom: 120, left: 30})
         .renderHorizontalGridLines(true)
         .controlsUseVisibility(true)
-        .compose(charts)
+        .colors(
+            d3.scaleOrdinal().domain(["positive", "negative"])
+            .range(["#00FF00", "#FF0000"])
+        )
+        .colorAccessor(function(d) {
+            if (d.value > 0.5) {
+                return "positive";
+            }
+            return "negative";
+        })
         ;
 
-    if (countries) {
-        chart.legend(dc.legend().x(80).y(0).itemHeight(13).gap(5));
+    if (country) {
+        chart.legend(dc.legend().x(20).y(0).itemHeight(13).gap(5));
     }
 
-    rotateTicks(chart, true);
+    rotateTicks(chart, true, -65, -50, -10);
+
+    chart.xAxis().tickFormat(function(l) { 
+        return l.slice(6);
+    });
 }
 
 export function StringencyMeasuresChart({
@@ -127,36 +119,62 @@ export function StringencyMeasuresChart({
     title,
     colors,
     byCountry=false,
-    note
+    note=null
 }) {
-    const [chart, setChart] = useState(null);
-    var id = randomId();
+    const [chart1, setChart1] = useState(null);
+    const [chart2, setChart2] = useState(null);
+    var ids = [randomId(), randomId()];
 
     useEffect(() => {
-        let newChart = new dc.CompositeChart(`#${id}`)
-        setChart(newChart);
-        data.addChart(newChart);
-
-        var countries = null;
         if (byCountry) {
-            countries = [... new Set(data.data.map(d => d.country))];
-        };
+            let newChart1 = new dc.BarChart(`#${ids[0]}`)
+            let newChart2 = new dc.BarChart(`#${ids[1]}`)
+            setChart1(newChart1);
+            setChart2(newChart2);
+            data.addChart(newChart1);
+            data.addChart(newChart2);
 
-        buildChart({
-            cf: data.cf,
-            countryCfs: data.countryCfs,
-            meta: data.meta,
-            chart: newChart,
-            colors: colors,
-            countries: countries,
-            mtrCols: data.mtrCols,
-        });
+            var countries = [... new Set(data.data.map(d => d.country))];
+            buildChart({
+                cf: data.countryCfs[countries[0]],
+                meta: data.meta,
+                chart: newChart1,
+                color: colors[0],
+                mtrCols: data.mtrCols,
+                country: countries[0]
+            });
+            buildChart({
+                cf: data.countryCfs[countries[1]],
+                meta: data.meta,
+                chart: newChart2,
+                color: colors[1],
+                mtrCols: data.mtrCols,
+                country: countries[1],
+            });
+        }
+        else {
+            let newChart = new dc.BarChart(`#${ids[0]}`)
+            setChart1(newChart);
+            data.addChart(newChart);
+
+            buildChart({
+                cf: data.cf,
+                meta: data.meta,
+                chart: newChart,
+                color: '#3D9970',
+                mtrCols: data.mtrCols,
+                country: null
+            });
+        }
     }, [data.cf]);
 
     return <>
         <span className="chart-title">{title}</span>
-        <ResetButton chart={chart}/>
+        <ResetButton chart={byCountry ? [chart1, chart2] : chart1}/>
         {note ? <><br/><i className="chart-note">{note}</i></> : <></>}
-        <div id={id} className="bar-chart"/>
+        <div className="stringency-charts">
+            <div id={ids[0]} className="bar-chart"/>
+            {byCountry ? <div id={ids[1]} className="bar-chart"/> : <></>}
+        </div>
     </>
 }
