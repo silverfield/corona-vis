@@ -1,4 +1,4 @@
-# corona-vis
+# covid19-vis
 
 Live site on [https://corona-vis-prod.herokuapp.com/](https://corona-vis-prod.herokuapp.com/)
 

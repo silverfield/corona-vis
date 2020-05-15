@@ -136,6 +136,25 @@ export function enableLegendToggle(chart, defaultOn, groupToogleFunc) {
           
                 drawLegendToggles(chart);
             })
+            .on('mouseover', function (d, i) {
+                let indexGroup = groupToogleFunc(i);
+
+                indexGroup.forEach(j => {
+                    var subchart = chart.select('g.sub._' + j);
+                    subchart.select('.line').style('stroke-width', 5);
+                    subchart.select('.line').style('stroke-opacity', 1);
+                });
+            })
+            .on('mouseout', function (d, i) {
+                let indexGroup = groupToogleFunc(i);
+
+                indexGroup.forEach(j => {
+                    var subchart = chart.select('g.sub._' + j);
+                    var visible = subchart.style('stroke-opacity') === '1';
+                    subchart.select('.line').style('stroke-width', 3);
+                    subchart.select('.line').style('stroke-opacity', visible ? 1 : hiddenOpacity);
+                });
+            })
         drawLegendToggles(chart);
     }
 
@@ -145,6 +164,7 @@ export function enableLegendToggle(chart, defaultOn, groupToogleFunc) {
             .selectAll('g.dc-legend .dc-legend-item')
             .style('opacity', (d, i) => {
                 var subchart = chart.select('g.sub._' + i);
+                subchart.select('.line').style('stroke-width', 3);
                 subchart.style('stroke-opacity', () => (defaultOn ? 1 : hiddenOpacity));
                 return (defaultOn ? 1 : 0.5);
             });
