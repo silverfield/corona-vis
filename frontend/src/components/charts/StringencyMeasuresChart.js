@@ -8,9 +8,8 @@ import {getAvgGroupFunctions, avgCalc, ResetButton, randomId, removeEmpty, rotat
 
 
 function buildChart({
-    cf,
-    countryCfs, 
-    countries,
+    cf, 
+    country,
     meta, 
     chart, 
     color, 
@@ -79,7 +78,7 @@ function buildChart({
     chart
         .barPadding(0.2)
         .outerPadding(0.5)
-        .elasticY(true)
+        .y(d3.scaleLinear().domain([0, 1]))
         .dimension(dimension)
         .group(g, country)
         .colors(color)
@@ -91,16 +90,6 @@ function buildChart({
         .margins({top: 20, right: 20, bottom: 120, left: 30})
         .renderHorizontalGridLines(true)
         .controlsUseVisibility(true)
-        .colors(
-            d3.scaleOrdinal().domain(["positive", "negative"])
-            .range(["#00FF00", "#FF0000"])
-        )
-        .colorAccessor(function(d) {
-            if (d.value > 0.5) {
-                return "positive";
-            }
-            return "negative";
-        })
         ;
 
     if (country) {

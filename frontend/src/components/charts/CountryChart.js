@@ -47,7 +47,6 @@ function setDimGroup({
         }
     }
 
-    let topEntries = filteredGroup.all();
     let accessorFunc = function(p) {
         if (isScalePop) {
             if (p.value.totalPop == 0) return null;
@@ -58,11 +57,12 @@ function setDimGroup({
         return p.value.total;
     }
     let compareFunc = function(a, b) {return accessorFunc(b) - accessorFunc(a)};
-    topEntries = topEntries.sort(compareFunc);
-    topEntries = topEntries.map(e => e.key).slice(0, 10);
 
     let topGroup = {
         all: function() {
+            let topEntries = filteredGroup.all();
+            topEntries = topEntries.sort(compareFunc);
+            topEntries = topEntries.map(e => e.key).slice(0, 10);
             return filteredGroup.all().filter(i => topEntries.includes(i.key)).sort(compareFunc);
         }
     }
