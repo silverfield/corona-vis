@@ -8,6 +8,7 @@ RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get -y install nodejs make build-essential
 
 COPY ./package.json ./
+COPY ./.babelrc ./
 COPY ./package-lock.json ./
 COPY ./webpack.config.js ./
 RUN npm install
