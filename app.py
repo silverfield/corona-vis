@@ -8,6 +8,7 @@ import requests
 import os
 
 current_df = None
+loaded_ok = True
 current_df_lock = threading.Lock()
 update_thread = threading.Thread()
 ping_thread = threading.Thread()
@@ -20,10 +21,13 @@ def create_app():
 
     def update_df():
         global current_df
+        global loaded_ok
 
         print('updating DF')
 
-        df = procdata.get_final_df()
+        load_ok = []
+        df = procdata.get_final_df(load_ok)
+        loaded_ok = load_ok[0]
 
         with current_df_lock:
             current_df = df
@@ -95,6 +99,12 @@ def create_app():
                 'gmob': current_df.dropna(subset=pc_cols)['date'].max(),
                 'oxford': current_df.dropna(subset=['stringency'])['date'].max()
             }
+
+    @app.route('/loaded-ok')
+    def loaded_ok_route():
+        wait_for_data()
+
+        return {'loaded_ok': loaded_ok}
 
     @app.route('/data')
     def get_data():

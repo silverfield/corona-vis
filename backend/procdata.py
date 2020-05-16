@@ -95,7 +95,10 @@ def get_covid_df():
     df.loc[df['country'] == 'Czechia', 'population'] = 10650000
     df['population'] = df['population'].fillna(0)
 
-    df['country'] = df['country'].str.replace('_', ' ')    
+    df['country'] = df['country'].str.replace('_', ' ')
+
+    if df['date'].dtype.name == 'object':
+        df['date'] = pd.to_datetime(df['date'], format="%d/%m/%Y")
     df['date'] = df['date'].dt.strftime('%Y-%m-%d')
 
     # add new columns - totals
@@ -196,12 +199,17 @@ def _get_final_df():
     return df
 
 
-def get_final_df():
+def get_final_df(load_ok=None):
     try:
-        return _get_final_df()
+        df = _get_final_df()
+        if type(load_ok) == list:
+            load_ok.append(True)
+        return df
     except Exception as e:
-        traceback.print_stack()
+        traceback.print_exc()
         print(f'Exception getting the data: {e}')
     
     print('Using backup')
+    if type(load_ok) == list:
+        load_ok.append(False)
     return pd.read_csv(f'{get_root()}/backend/bck_data.csv', index_col=0)

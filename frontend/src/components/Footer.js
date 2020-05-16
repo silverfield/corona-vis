@@ -3,12 +3,21 @@ export default function Footer({
 }) {
     return (
         <footer>
-            design &amp; development by Frantisek Hajnovic<br/>
-            <a href="www.ferohajnovic.com">ferohajnovic.com</a><br/>
-            copyright © 2020<br/>
+            <div className="foot-content">
+                <div className="foot-item">
+                    design &amp; development by Frantisek Hajnovic
+                </div>
+                <div className="foot-item">
+                    <a href="www.ferohajnovic.com">ferohajnovic.com</a>
+                </div>
+                <div className="foot-item">
+                    copyright © 2020
+                </div>
+            </div>
             <hr/>
-            Citations <br/>
-            <span className="citation">Hale, Thomas, Sam Webster, Anna Petherick, Toby Phillips, and Beatriz Kira (2020). Oxford COVID-19 Government Response Tracker, Blavatnik School of Government. Data use policy: Creative Commons Attribution CC BY standard.</span>
+            <div className="citations">
+                The Stringency data is due to: Hale, Thomas, Sam Webster, Anna Petherick, Toby Phillips, and Beatriz Kira (2020). Oxford COVID-19 Government Response Tracker, Blavatnik School of Government. Data use policy: Creative Commons Attribution CC BY standard.
+            </div>
         </footer>
     );
   }

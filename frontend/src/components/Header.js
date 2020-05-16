@@ -26,6 +26,8 @@ export default function Header({
         'oxford': '(loading)',
     });
 
+    const [loadedOk, setLoadedOk] = useState(true);
+
     useEffect(() => {
         jQuery.get('/max-dates', function(maxDates) {
             let keys = Object.keys(maxDates);
@@ -33,6 +35,10 @@ export default function Header({
             newDataWhen = Object.fromEntries(newDataWhen);
 
             setDataWhen(newDataWhen);
+        });
+
+        jQuery.get('/loaded-ok', function(newLoadedOk) {
+            setLoadedOk(newLoadedOk['loaded_ok']);
         });
     }, []);
 
@@ -53,12 +59,18 @@ export default function Header({
                 <hr className="hr-header"/>
 
                 <div className="header-coltext" style={{'textAlign': 'right'}}>
-                    Made by Frantisek Hajnovic <br/>
+                    Made by <a href="http://www.ferohajnovic.com">Frantisek Hajnovic</a> <br/>
                     Powered by <a href="https://dc-js.github.io/dc.js/">dc.js</a>, <a href="https://reactjs.org/">react</a>, <br/>
                     <a href="https://flask.palletsprojects.com/en/1.1.x/quickstart/">flask</a>, <a href="https://pandas.pydata.org/">pandas</a> and <a href="https://heroku.com/">heroku</a> <br/>
                     Check out the code on <a href="https://github.com/silverfield/corona-vis">GitHub</a>
                 </div>
             </div>
+
+            {
+                loadedOk ? <></> : <div className="using-bck-wrap">
+                    <span className="using-bck">Could not download and process data - likely one of the dataset's format changed. Using backup instead</span>
+                </div>
+            }
 
             <hr/>
 
