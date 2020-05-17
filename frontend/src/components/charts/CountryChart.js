@@ -11,6 +11,7 @@ function setDimGroup({
     cf, 
     grouping,
     measure,
+    minMax,
     isScalePop,
     threshold,
     dimensionWrap
@@ -26,13 +27,13 @@ function setDimGroup({
 
     function reduceAdd(p, v) {
         p.total += v[measure];
-        p.totalPop += v.population;
+        p.totalPop = v.population;
         return p;
     }
     
     function reduceRemove(p, v) {
         p.total -= v[measure];
-        p.totalPop -= v.population;
+        p.totalPop = v.population;
         return p;
     }
     
@@ -44,7 +45,7 @@ function setDimGroup({
 
     let filteredGroup = {
         all: function() {
-            return group.all().filter(i => i.value.total > threshold)
+            return group.all().filter(i => i.value.totalPop > threshold)
         }
     }
 
@@ -57,7 +58,9 @@ function setDimGroup({
 
         return p.value.total;
     }
-    let compareFunc = function(a, b) {return accessorFunc(b) - accessorFunc(a)};
+    let compareFunc = function(a, b) {
+        return (minMax === 'max' ? accessorFunc(b) - accessorFunc(a) : accessorFunc(a) - accessorFunc(b));
+    };
 
     let topGroup = {
         all: function() {
@@ -79,6 +82,7 @@ function createChart({
     cf, 
     grouping,
     measure,
+    minMax,
     isScalePop,
     threshold,
     dimensionWrap
@@ -90,6 +94,7 @@ function createChart({
         cf: cf, 
         grouping: grouping,
         measure: measure,
+        minMax: minMax,
         isScalePop: isScalePop,
         threshold: threshold,
         dimensionWrap: dimensionWrap
@@ -115,6 +120,7 @@ export function CountryChart({
     var dimensionWrap = [];
     var [grouping, setGrouping] = useState('countries');
     var [measure, setMeasure] = useState('cases');
+    var [minMax, setMinMax] = useState('max');
     var [isScalePop, setIsScalePop] = useState(false);
     var [threshold, setThreshold] = useState(0);
     var id = randomId();
@@ -125,6 +131,7 @@ export function CountryChart({
             cf: data.cf, 
             grouping: grouping,
             measure: measure,
+            minMax: minMax,
             isScalePop: isScalePop,
             threshold: threshold,
             dimensionWrap: dimensionWrap
@@ -138,6 +145,7 @@ export function CountryChart({
         cf: data.cf, 
         grouping: grouping,
         measure: measure,
+        minMax: minMax,
         isScalePop: isScalePop,
         threshold: threshold,
         dimensionWrap: dimensionWrap
@@ -159,6 +167,18 @@ export function CountryChart({
         let newMeasure = (measure == 'deaths' ? 'cases' : 'deaths');
         setMeasure(newMeasure);
         measure = newMeasure;
+        resetChart(chart);
+        
+        setTimeout(() => {
+            refreshDimGroup();
+            setTimeout(() => dc.redrawAll());
+        })
+    };
+
+    function changeMinMax() {
+        let newMinMax = (minMax == 'min' ? 'max' : 'min');
+        setMinMax(newMinMax);
+        minMax = newMinMax;
         resetChart(chart);
         
         setTimeout(() => {
@@ -192,6 +212,18 @@ export function CountryChart({
             <div className="control">
                 <div 
                     className="country-control-button"
+                    onClick={(e) => changeMinMax()}
+                >
+                    {  
+                        minMax === 'min' ? 
+                        <><b>min</b>/max</> :
+                        <>min/<b>max</b></>
+                    }
+                </div>
+            </div>
+            <div className="control">
+                <div 
+                    className="country-control-button"
                     onClick={(e) => changeGrouping()}
                 >
                     {  
@@ -222,7 +254,7 @@ export function CountryChart({
                 <label htmlFor="pop-scale">Scale by population</label>
             </div>
             <div className="control">
-                <label className="country-label" htmlFor="threshold">Threshold</label>
+                <label className="country-label" htmlFor="threshold">Min population</label>
                 <input 
                     type="number" 
                     id="threshold" 
