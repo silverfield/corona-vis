@@ -14,16 +14,14 @@ function setDimGroup({
     minMax,
     isScalePop,
     threshold,
-    dimensionWrap
+    oldDim,
+    setOldDim
 }) {
-    if (dimensionWrap.length > 0) {
-        dimensionWrap.forEach(d => {
-            d.dispose(); 
-            dimensionWrap.pop();
-        });
+    if (oldDim) {
+        oldDim.dispose();
     }
     let dimension = grouping === 'continents' ? cf.dimension(d => d.continent) : cf.dimension(d => d.country);
-    dimensionWrap.push(dimension);
+    setOldDim(dimension);
 
     function reduceAdd(p, v) {
         p.total += v[measure];
@@ -85,7 +83,8 @@ function createChart({
     minMax,
     isScalePop,
     threshold,
-    dimensionWrap
+    oldDim,
+    setOldDim
 }) {
     let chart = new dc.RowChart(`#${id}`);
 
@@ -97,7 +96,8 @@ function createChart({
         minMax: minMax,
         isScalePop: isScalePop,
         threshold: threshold,
-        dimensionWrap: dimensionWrap
+        oldDim: oldDim,
+        setOldDim: setOldDim
     });
 
     chart
@@ -117,7 +117,7 @@ export function CountryChart({
     data
 }) {
     const [chart, setChart] = useState(null);
-    var dimensionWrap = [];
+    const [oldDim, setOldDim] = useState(null);
     var [grouping, setGrouping] = useState('countries');
     var [measure, setMeasure] = useState('cases');
     var [minMax, setMinMax] = useState('max');
@@ -134,7 +134,8 @@ export function CountryChart({
             minMax: minMax,
             isScalePop: isScalePop,
             threshold: threshold,
-            dimensionWrap: dimensionWrap
+            oldDim: oldDim,
+            setOldDim: setOldDim
         });
         setChart(newChart);
         data.addChart(newChart);
@@ -148,7 +149,8 @@ export function CountryChart({
         minMax: minMax,
         isScalePop: isScalePop,
         threshold: threshold,
-        dimensionWrap: dimensionWrap
+        oldDim: oldDim,
+        setOldDim: setOldDim
     });
 
     function changeGrouping() {
@@ -189,6 +191,7 @@ export function CountryChart({
 
     function changeIsScalePop(newIsScalePop) {
         isScalePop = newIsScalePop;
+        setIsScalePop(newIsScalePop);
         resetChart(chart);
         
         setTimeout(() => {
@@ -199,6 +202,7 @@ export function CountryChart({
 
     function changeThreshold(newThreshold) {
         threshold = newThreshold;
+        setThreshold(threshold);
         resetChart(chart);
         
         setTimeout(() => {
@@ -216,8 +220,8 @@ export function CountryChart({
                 >
                     {  
                         minMax === 'min' ? 
-                        <><b>min</b>/max</> :
-                        <>min/<b>max</b></>
+                        <><span className="selected-btn">min</span>/max</> :
+                        <>min/<span className="selected-btn">max</span></>
                     }
                 </div>
             </div>
@@ -228,8 +232,8 @@ export function CountryChart({
                 >
                     {  
                         grouping === 'countries' ? 
-                        <><b>countries</b>/continents</> :
-                        <>countries/<b>continents</b></>
+                        <><span className="selected-btn">countries</span>/continents</> :
+                        <>countries/<span className="selected-btn">continents</span></>
                     }
                 </div>
             </div>
@@ -240,8 +244,8 @@ export function CountryChart({
                 >
                     {  
                         measure === 'cases' ? 
-                        <><b>cases</b>/deaths</> :
-                        <>cases/<b>deaths</b></>
+                        <><span className="selected-btn">cases</span>/deaths</> :
+                        <>cases/<span className="selected-btn">deaths</span></>
                     }
                 </div>
             </div>
