@@ -1,4 +1,4 @@
-import {useData, usedata} from '../../contexts/DataProvider'
+import { usedata} from '../../contexts/DataProvider'
 import { useState, useEffect } from 'react';
 import { Error } from '../Error'
 import { Loader } from '../Loader'

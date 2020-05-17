@@ -9,9 +9,10 @@ import { min } from "d3";
 function setDimGroup({
     chart, 
     cf, 
-    isContinent,
+    grouping,
+    measure,
     isScalePop,
-    minCases,
+    threshold,
     dimensionWrap
 }) {
     if (dimensionWrap.length > 0) {
@@ -20,17 +21,17 @@ function setDimGroup({
             dimensionWrap.pop();
         });
     }
-    let dimension = isContinent ? cf.dimension(d => d.continent) : cf.dimension(d => d.country);
+    let dimension = grouping === 'continents' ? cf.dimension(d => d.continent) : cf.dimension(d => d.country);
     dimensionWrap.push(dimension);
 
     function reduceAdd(p, v) {
-        p.total += v.cases;
+        p.total += v[measure];
         p.totalPop += v.population;
         return p;
     }
     
     function reduceRemove(p, v) {
-        p.total -= v.cases;
+        p.total -= v[measure];
         p.totalPop -= v.population;
         return p;
     }
@@ -43,7 +44,7 @@ function setDimGroup({
 
     let filteredGroup = {
         all: function() {
-            return group.all().filter(i => i.value.total > minCases)
+            return group.all().filter(i => i.value.total > threshold)
         }
     }
 
@@ -76,9 +77,10 @@ function setDimGroup({
 function createChart({
     id, 
     cf, 
-    isContinent,
+    grouping,
+    measure,
     isScalePop,
-    minCases,
+    threshold,
     dimensionWrap
 }) {
     let chart = new dc.RowChart(`#${id}`);
@@ -86,9 +88,10 @@ function createChart({
     setDimGroup({
         chart: chart, 
         cf: cf, 
-        isContinent: isContinent,
+        grouping: grouping,
+        measure: measure,
         isScalePop: isScalePop,
-        minCases: minCases,
+        threshold: threshold,
         dimensionWrap: dimensionWrap
     });
 
@@ -110,18 +113,20 @@ export function CountryChart({
 }) {
     const [chart, setChart] = useState(null);
     var dimensionWrap = [];
-    var [isContinent, setIsContinent] = useState(false);
+    var [grouping, setGrouping] = useState('countries');
+    var [measure, setMeasure] = useState('cases');
     var [isScalePop, setIsScalePop] = useState(false);
-    var [minCases, setMinCases] = useState(0);
+    var [threshold, setThreshold] = useState(0);
     var id = randomId();
 
     useEffect(() => {
         let newChart = createChart({
             id: id, 
             cf: data.cf, 
-            isContinent: isContinent,
+            grouping: grouping,
+            measure: measure,
             isScalePop: isScalePop,
-            minCases: minCases,
+            threshold: threshold,
             dimensionWrap: dimensionWrap
         });
         setChart(newChart);
@@ -131,14 +136,29 @@ export function CountryChart({
     let refreshDimGroup = () => setDimGroup({
         chart: chart, 
         cf: data.cf, 
-        isContinent: isContinent,
+        grouping: grouping,
+        measure: measure,
         isScalePop: isScalePop,
-        minCases: minCases,
+        threshold: threshold,
         dimensionWrap: dimensionWrap
     });
 
-    function changeContinent(newIsContinent) {
-        isContinent = newIsContinent;
+    function changeGrouping() {
+        let newGrouping = (grouping == 'continents' ? 'countries' : 'continents');
+        setGrouping(newGrouping);
+        grouping = newGrouping;
+        resetChart(chart);
+        
+        setTimeout(() => {
+            refreshDimGroup();
+            setTimeout(() => dc.redrawAll());
+        })
+    };
+
+    function changeMeasure() {
+        let newMeasure = (measure == 'deaths' ? 'cases' : 'deaths');
+        setMeasure(newMeasure);
+        measure = newMeasure;
         resetChart(chart);
         
         setTimeout(() => {
@@ -157,8 +177,8 @@ export function CountryChart({
         })
     };
 
-    function changeMinCases(newMinCases) {
-        minCases = newMinCases;
+    function changeThreshold(newThreshold) {
+        threshold = newThreshold;
         resetChart(chart);
         
         setTimeout(() => {
@@ -170,12 +190,28 @@ export function CountryChart({
     return <>
         <div className="loc-controls">
             <div className="control">
-                <input 
-                    type="checkbox" 
-                    id="continent" 
-                    name="continent" 
-                    onChange={(e) => changeContinent(e.target.checked)}/>
-                <label htmlFor="continent">Continents</label>
+                <div 
+                    className="country-control-button"
+                    onClick={(e) => changeGrouping()}
+                >
+                    {  
+                        grouping === 'countries' ? 
+                        <><b>countries</b>/continents</> :
+                        <>countries/<b>continents</b></>
+                    }
+                </div>
+            </div>
+            <div className="control">
+                <div 
+                    className="country-control-button"
+                    onClick={(e) => changeMeasure()}
+                >
+                    {  
+                        measure === 'cases' ? 
+                        <><b>cases</b>/deaths</> :
+                        <>cases/<b>deaths</b></>
+                    }
+                </div>
             </div>
             <div className="control">
                 <input 
@@ -186,16 +222,16 @@ export function CountryChart({
                 <label htmlFor="pop-scale">Scale by population</label>
             </div>
             <div className="control">
-                <label className="country-label" htmlFor="min-cases">Min cases</label>
+                <label className="country-label" htmlFor="threshold">Threshold</label>
                 <input 
                     type="number" 
-                    id="min-cases" 
-                    name="min-cases" 
+                    id="threshold" 
+                    name="threshold" 
                     defaultValue="0"
-                    onChange={(e) => changeMinCases(e.target.value)}/>
+                    onChange={(e) => changeThreshold(e.target.value)}/>
             </div>
         </div>
-        <span className="chart-title">Total cases by country/continent (top 10)</span>
+        <span className="chart-title">Total {measure} by {grouping} (top 10)</span>
         <ResetButton chart={chart}/>
         <div id={id} className="country-bar"/>
     </>

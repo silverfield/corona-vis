@@ -282,6 +282,20 @@ footer {
     }
 }
 
+.country-control-button {
+  display: inline-block;
+  cursor: pointer;
+  background-color: $color-inco-strong;
+  display: inline-block;
+  margin: 5px;
+  padding: 5px;
+
+  &:hover {
+    background-color: $color-inco-medlight;
+    color: black;
+    text-decoration: none;
+  }
+}
 
 /* ------------------------------------------------------------ */
 /* Autocomplete */

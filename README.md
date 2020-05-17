@@ -2,7 +2,7 @@
 
 Live site on [http://covid-vis.ferohajnovic.com/](http://covid-vis.ferohajnovic.com/)
 
-To start, simply:
+To run locally, simply:
 * make sure you have Docker installed
 * Build the image: `docker image build -t corona-main .`
 * Run the app: `docker run -it -p 5000:5000 corona-main`
@@ -29,7 +29,7 @@ Run:
 
 ### deploy
 
-* heroku app -> `corona-vis-prod`
+* heroku app -> `corona-vis-prod` (you'd need to create one for yourself)
 * `git push heroku master`
 
 #### deploy setup
