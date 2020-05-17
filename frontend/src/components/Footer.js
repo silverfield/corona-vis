@@ -8,7 +8,7 @@ export default function Footer({
                     design &amp; development by Frantisek Hajnovic
                 </div>
                 <div className="foot-item">
-                    <a href="www.ferohajnovic.com">ferohajnovic.com</a>
+                    <a href="http://ferohajnovic.com">ferohajnovic.com</a>
                 </div>
                 <div className="foot-item">
                     copyright © 2020
