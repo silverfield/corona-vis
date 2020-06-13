@@ -223,6 +223,7 @@ function WorldContent({
                     note="Not available for all countries"
                     reduceFunc={(g) => g.reduce(...getAvgGroupFunctions(v => v.stringency))}
                     colors={['green']}
+                    domain={[0, 1]}
                 />
             </div>
         </div>

@@ -139,7 +139,8 @@ def get_stringency_df(covid_df):
         'ConfirmedCases',
         'ConfirmedDeaths'
     ]:
-        del df[c]
+        if c in df.columns:
+            del df[c]
         
     df = df.rename(columns={
         'StringencyIndex': 'stringency',

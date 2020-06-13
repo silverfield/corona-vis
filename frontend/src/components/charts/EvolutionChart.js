@@ -13,6 +13,7 @@ function buildChart({
     chart, 
     reduceFunc,
     colors, 
+    domain,
     isLogScale,
     isScalePop,
     countries=null
@@ -60,13 +61,19 @@ function buildChart({
         .x(d3.scaleTime().domain([meta['minDate'], meta['maxDate']]))
         .height(150)
         .elasticX(true)
-        .elasticY(true)
         .transitionDuration(500)
         .margins({top: 0, right: 50, bottom: 40, left: 70})
         .renderHorizontalGridLines(true)
         .controlsUseVisibility(true)
         .compose(charts)
         ;
+
+    if (domain === null) {
+        chart.elasticY(true);
+    }
+    else {
+        chart.y(d3.scaleLinear().domain(domain));
+    }
 
     if (countries) {
         chart.legend(dc.legend().x(80).y(0).itemHeight(13).gap(5));
@@ -93,6 +100,7 @@ export function EvolutionChart({
     isLogScale=() => false,
     isScalePop=() => false,
     byCountry=false,
+    domain=null,
     note
 }) {
     const [chart, setChart] = useState(null);
@@ -113,6 +121,7 @@ export function EvolutionChart({
             countryCfs: data.countryCfs,
             meta: data.meta,
             chart: newChart,
+            domain: domain,
             reduceFunc: reduceFunc,
             colors: colors,
             isLogScale: isLogScale,

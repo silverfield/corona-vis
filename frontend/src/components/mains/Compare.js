@@ -247,6 +247,7 @@ function CompareContent({
                     reduceFunc={(g) => g.reduceSum(d => d.stringency)}
                     colors={countryColors}
                     byCountry={true}
+                    domain={[0, 1]}
                 />
             </div>
         </div>
