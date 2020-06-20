@@ -115,6 +115,7 @@ def get_covid_df():
     df.index = range(len(df))
 
     # check all fields are filled
+    df = df.dropna()
     assert all(df.count()['date'] == x for x in df.count())
 
     return df
