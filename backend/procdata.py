@@ -112,6 +112,10 @@ def get_covid_df():
         return g
 
     df = df.groupby('country').apply(_apply)
+
+    df['cases'] = df['cases'].apply(lambda x: max(0, x))
+    df['deaths'] = df['deaths'].apply(lambda x: max(0, x))
+
     df.index = range(len(df))
 
     # check all fields are filled
