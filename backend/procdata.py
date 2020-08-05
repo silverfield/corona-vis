@@ -60,6 +60,9 @@ def get_google_mobility_df(covid_df):
 
     df = pd.read_csv(url, dtype=dtypes)
 
+    del df['iso_3166_2_code']
+    del df['census_fips_code']
+
     df = consolidate_country_col(df, 'country_region', 'country_region_code', covid_df)
 
     df = df[pd.isna(df['sub_region_1'])]
@@ -70,6 +73,9 @@ def get_google_mobility_df(covid_df):
     for col in df.columns:
         if col.endswith(to_rep):
             df = df.rename(columns={col: 'pc_' + col.replace(to_rep, '')})
+
+    df = df[pd.isnull(df['metro_area'])]
+    del df['metro_area']
 
     return df
 
@@ -99,7 +105,7 @@ def get_covid_df():
 
     if df['date'].dtype.name == 'object':
         df['date'] = pd.to_datetime(df['date'], format="%d/%m/%Y")
-    df['date'] = df['date'].dt.strftime('%Y-%m-%d')
+    df['date'] = df['date'].dt.strftime('%Y-%m-%d')    
 
     # add new columns - totals
 
