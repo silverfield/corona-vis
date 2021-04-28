@@ -29,7 +29,9 @@ Run:
 
 ### deploy
 
+* [heroku setup](https://realpython.com/flask-by-example-part-1-project-setup/#heroku-command-line-interface-cli)
 * heroku app -> `corona-vis-prod` (you'd need to create one for yourself)
+* `heroku git:remote --app corona-vis-prod`
 * `git push heroku master`
 
 #### deploy setup
