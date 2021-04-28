@@ -212,41 +212,41 @@ def _get_final_df():
 
 
 def get_final_df(load_ok=None):
-    try:
-        df = _get_final_df()
-        if type(load_ok) == list:
-            load_ok.append(True)
-
-    
-        cols = [
-            'date', 
-            'cases', 
-            'deaths', 
-            'country', 
-            'continent',
-            'population', 
-            'tot_deaths', 
-            'tot_cases', 
-            'pc_retail_and_recreation',
-            'pc_grocery_and_pharmacy', 
-            'pc_parks', 
-            'pc_transit_stations',
-            'pc_workplaces', 
-            'pc_residential', 
-            'mtr_c_school_closing',
-            'mtr_c_workplace_closing', 
-            'mtr_c_cancel_public_events',
-            'mtr_c_restrictions_on_gatherings', 
-            'mtr_c_close_public_transport',
-            'mtr_c_stay_at_home_requirements',
-            'mtr_c_restrictions_on_internal_movement',
-            'mtr_c_international_travel_controls', 
-            'stringency',
-        ]
-        return df[cols]
-    except Exception as e:
-        traceback.print_exc()
-        print(f'Exception getting the data: {e}')
+    # try:
+    #     df = _get_final_df()
+    #     if type(load_ok) == list:
+    #         load_ok.append(True)
+    #
+    #
+    #     cols = [
+    #         'date',
+    #         'cases',
+    #         'deaths',
+    #         'country',
+    #         'continent',
+    #         'population',
+    #         'tot_deaths',
+    #         'tot_cases',
+    #         'pc_retail_and_recreation',
+    #         'pc_grocery_and_pharmacy',
+    #         'pc_parks',
+    #         'pc_transit_stations',
+    #         'pc_workplaces',
+    #         'pc_residential',
+    #         'mtr_c_school_closing',
+    #         'mtr_c_workplace_closing',
+    #         'mtr_c_cancel_public_events',
+    #         'mtr_c_restrictions_on_gatherings',
+    #         'mtr_c_close_public_transport',
+    #         'mtr_c_stay_at_home_requirements',
+    #         'mtr_c_restrictions_on_internal_movement',
+    #         'mtr_c_international_travel_controls',
+    #         'stringency',
+    #     ]
+    #     return df[cols]
+    # except Exception as e:
+    #     traceback.print_exc()
+    #     print(f'Exception getting the data: {e}')
     
     print('Using backup')
     if type(load_ok) == list:
